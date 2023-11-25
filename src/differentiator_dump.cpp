@@ -47,7 +47,7 @@ inline void write_dot_file( FILE *dot_file, Expression *expr )
             break;
         }
 
-        ExprNodeData node_data = diff_get_data(expr, curr_node);
+        ExprNodeData node_data = diff_get_data(curr_node);
         if ( node_data.type == CONST )
         {
             fprintf(dot_file,   "NODE_%llu[shape=\"record\", fontname=\"verdana\",\n"

@@ -13,6 +13,4 @@ void expr_dtor( Expression *expr_ptr )
         assert(expr_ptr->vars[ind]);
         free(expr_ptr->vars[ind]);
     }
-
-
 }
