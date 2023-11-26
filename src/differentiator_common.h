@@ -20,10 +20,11 @@ enum DiffStatus
 
 //! @note Every variable is assigned an id, starting from zero. This very id
 //! is used to get string, containing variable's name.
+//! @note VARIABLE'S NAMES CONTAIN ONLY LETTERS!
 struct Vars
 {
-    char **vars_names     = NULL; //< Contains variable's names.
-    size_t vars_len = 0;    //< Length of 'vars' array.
+    char **vars_names   = NULL; //< Contains variable's names.
+    size_t vars_len     = 0;    //< Length of 'vars' array.
 };
 
 struct Expression
@@ -80,17 +81,19 @@ struct OpBin
 */
 const OpUnr op_unr_list[] =
 {
-    { "+",      op_unr_plus     },
-    { "-",      op_unr_minus    },
-    { "sqrt",   op_unr_sqrt     }
+    { "FICTIONAL",  NULL            },
+    { "+",          op_unr_plus     },
+    { "-",          op_unr_minus    },
+    { "sqrt",       op_unr_sqrt     }
 };
 const OpBin op_bin_list[] =
 {
-    { "+",      op_bin_add      },
-    { "-",      op_bin_sub      },
-    { "*",      op_bin_mul      },
-    { "/",      op_bin_div      },
-    { "^",      op_bin_pow      }
+    { "FICTIONAL",  NULL            },
+    { "+",          op_bin_add      },
+    { "-",          op_bin_sub      },
+    { "*",          op_bin_mul      },
+    { "/",          op_bin_div      },
+    { "^",          op_bin_pow      }
 };
 
 #define DEF_DIFF_STATUS(name, message) message,
@@ -162,5 +165,7 @@ void diff_insert_op_bin_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_bi
 void diff_insert_op_bin_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin );
 
 #define size_of_arr(arr) (sizeof(arr)/sizeof(*arr))
+
+#define FREE(ptr) do { if (ptr) free(ptr); } while(0)
 
 #endif /* DIFF_COMMON_H */
