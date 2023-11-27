@@ -9,6 +9,7 @@
 typedef uint8_t var_t;
 typedef uint8_t op_unr_t;
 typedef uint8_t op_bin_t;
+typedef uint8_t op_prior_t;
 
 
 #define DEF_DIFF_STATUS(name, message) DIFF_STATUS_##name,
@@ -61,14 +62,16 @@ static_assert( OP_NAME_MAX_LEN <= WORD_MAX_LEN && VAR_NAME_MAX_LEN <= WORD_MAX_L
 
 struct OpUnr
 {
-    char name[OP_NAME_MAX_LEN] = "";
-    double (*op_f)(double a) = NULL;
+    char name[OP_NAME_MAX_LEN]  = "";   // Operator's name. SEE NOTE CONCERNING NAMES!
+    double (*op_f)(double a)    = NULL; //< Function pointer.
+    op_prior_t prior            = 0;    //< the lesser the number is, the higher priority.
 };
 
 struct OpBin
 {
-    char name[OP_NAME_MAX_LEN] = "";
-    double (*op_f)(double a, double b) = NULL;
+    char name[OP_NAME_MAX_LEN]          = "";   // Operator's name. SEE NOTE CONCERNING NAMES!
+    double (*op_f)(double a, double b)  = NULL; //< Function pointer.
+    op_prior_t prior                    = 0;    //< The lesser the number is, the higher priority.
 };
 
 /*
@@ -81,19 +84,19 @@ struct OpBin
 */
 const OpUnr op_unr_list[] =
 {
-    { "FICTIONAL",  NULL            },
-    { "+",          op_unr_plus     },
-    { "-",          op_unr_minus    },
-    { "sqrt",       op_unr_sqrt     }
+    { "FICTIONAL",  NULL,           0},
+    { "+",          op_unr_plus,    1},
+    { "-",          op_unr_minus,   1},
+    { "sqrt",       op_unr_sqrt,    1}
 };
 const OpBin op_bin_list[] =
 {
-    { "FICTIONAL",  NULL            },
-    { "+",          op_bin_add      },
-    { "-",          op_bin_sub      },
-    { "*",          op_bin_mul      },
-    { "/",          op_bin_div      },
-    { "^",          op_bin_pow      }
+    { "FICTIONAL",  NULL,           0},
+    { "+",          op_bin_add,     4},
+    { "-",          op_bin_sub,     4},
+    { "*",          op_bin_mul,     3},
+    { "/",          op_bin_div,     3},
+    { "^",          op_bin_pow,     2}
 };
 
 #define DEF_DIFF_STATUS(name, message) message,
