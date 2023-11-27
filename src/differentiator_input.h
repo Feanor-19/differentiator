@@ -32,19 +32,25 @@ struct VarsOpsRaw
 {
     struct
     {
-        VarForParsing *vars_for_parsing         = NULL; //< Is used in the main part of parsing.
-        size_t n_vars                           = 0;    //< Length of vars_for_parsing.
+        VarForParsing *vars_for_parsing         = NULL;
+        size_t n_vars                           = 0;
     };
     struct
     {
-        OpUnrForParsing *ops_unr_for_parsing    = NULL; //< Is used in the main part of parsing.
-        size_t n_ops_unr                        = 0;    //< Length of ops_unr_for_parsing.
+        OpUnrForParsing *ops_unr_for_parsing    = NULL;
+        size_t n_ops_unr                        = 0;
     };
     struct
     {
-        OpBinForParsing *ops_bin_for_parsing    = NULL; //< Is used in the main part of parsing.
-        size_t n_ops_bin                        = 0;    //< Length of ops_bin_for_parsing.
+        OpBinForParsing *ops_bin_for_parsing    = NULL;
+        size_t n_ops_bin                        = 0;
     };
+    struct
+    {
+        char **vars_names                       = NULL;
+        size_t n_var_names                      = 0;
+    };
+
 };
 
 

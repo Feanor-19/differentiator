@@ -61,5 +61,12 @@ int main()
         printf("\n");
     }
 
+    printf("Variables:\n");
+    for (size_t ind = 0; ind < vars_ops_raw.n_var_names; ind++)
+    {
+        printf("%llu : <%s>\n", ind, vars_ops_raw.vars_names[ind]);
+    }
+    // debug end
+
     return 0;
 }
