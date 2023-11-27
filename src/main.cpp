@@ -11,26 +11,25 @@ int main()
 
     // debug
     printf("<%s>\n", file_buf.buf);
+    // deibg end
 
     ParsedFileBuf parsed_file = {};
     DiffStatus err = parse_file_buf(file_buf, &parsed_file);
     if (err)
     {
-        FREE(file_buf.buf);
-        FREE(parsed_file.tokens);
+        buf_free(&file_buf);
+        parsed_file_buf_dtor(&parsed_file);
         diff_print_status_message(stderr, err);
         return err;
     }
 
     VarsOpsRaw vars_ops_raw = { NULL, 0, NULL, 0, NULL, 0 };
-    err = diff_get_vars_ops_raw( parsed_file, &vars_ops_raw );
+    err = diff_assemble_vars_ops_raw( parsed_file, &vars_ops_raw );
     if (err)
     {
-        FREE(file_buf.buf);
-        FREE(parsed_file.tokens);
-        FREE(vars_ops_raw.ops_bin_for_parsing);
-        FREE(vars_ops_raw.ops_unr_for_parsing);
-        FREE(vars_ops_raw.vars_for_parsing);
+        buf_free(&file_buf);
+        parsed_file_buf_dtor(&parsed_file);
+        vars_ops_raw_dtor(&vars_ops_raw);
 
         diff_print_status_message(stderr, err);
         return err;
@@ -61,12 +60,38 @@ int main()
         printf("\n");
     }
 
-    printf("Variables:\n");
+    printf("Variables, ids and names:\n");
     for (size_t ind = 0; ind < vars_ops_raw.n_var_names; ind++)
     {
         printf("%llu : <%s>\n", ind, vars_ops_raw.vars_names[ind]);
     }
     // debug end
+
+    Tree expr_tree = {};
+    err = diff_assemble_expr_tree(parsed_file, &vars_ops_raw, &expr_tree);
+    if (err)
+    {
+        buf_free(&file_buf);
+        parsed_file_buf_dtor(&parsed_file);
+        vars_ops_raw_dtor(&vars_ops_raw);
+        tree_dtor(&expr_tree);
+
+        diff_print_status_message(stderr, err);
+        return err;
+    }
+
+    Expression expr = diff_assemble_expression( &expr_tree, vars_ops_raw.vars_names, vars_ops_raw.n_var_names );
+
+    buf_free(&file_buf);
+    parsed_file_buf_dtor(&parsed_file);
+    vars_ops_raw_dtor(&vars_ops_raw);
+
+    // end of input
+
+    // ...some work with expression...
+
+
+    diff_expr_dtor(&expr);
 
     return 0;
 }

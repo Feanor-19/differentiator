@@ -62,7 +62,7 @@ inline void write_dot_file( FILE *dot_file, Expression *expr )
                                 "style=bold, style=filled,\ncolor=\"" COLOR_NODE_COLOR "\""
                                 ", fillcolor=\"" COLOR_VAR_NODE_FILL "\",\n"
                                 "label = %s];\n\n",
-                                ind, expr->vars.vars_names[node_data.var]);
+                                ind, expr->vars_names[node_data.var]);
         }
         else if ( node_data.type == OP_BIN )
         {

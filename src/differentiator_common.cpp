@@ -180,3 +180,34 @@ void diff_insert_op_bin_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_b
     node_data.op_bin = op_bin;
     tree_insert_data_as_right_child( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
+
+void expr_node_data_print( FILE* stream, void *data_ptr )
+{
+    assert(stream);
+    assert(data_ptr);
+
+    ExprNodeData *ptr = (ExprNodeData*) data_ptr;
+    fprintf(stream, "{");
+    switch(ptr->type)
+    {
+        case ERROR:
+            fprintf(stream, "ERROR");
+            break;
+        case CONST:
+            fprintf(stream, "type: CONST; value: <%lf>", ptr->cnst);
+            break;
+        case VAR:
+            fprintf(stream, "type: VAR; var_id: <%d>", ptr->var);
+            break;
+        case OP_UNR:
+            fprintf(stream, "type: OP_UNR; op_unr_id: <%d>", ptr->op_unr);
+            break;
+        case OP_BIN:
+            fprintf(stream, "type: OP_BIN; op_bin_id: <%d>", ptr->op_bin);
+            break;
+        default:
+            assert(0);
+            break;
+    }
+    fprintf(stream, "}");
+}

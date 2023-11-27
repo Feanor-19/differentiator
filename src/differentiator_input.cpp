@@ -150,7 +150,7 @@ inline var_t get_var_id(    ParsedFileBuf parsed_buf,
     порядковый номер, который и надо писать в дерево
 */
 
-DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
+DiffStatus diff_assemble_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
 {
     assert(parsed_buf.tokens);
     assert(ret);
@@ -213,4 +213,66 @@ DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
 
     *ret = { vars, vars_ind, ops_unr, ops_unr_ind, ops_bin, ops_bin_ind, vars_names, vars_names_ind };
     return DIFF_STATUS_OK;
+}
+
+DiffStatus diff_assemble_expr_tree( ParsedFileBuf parsed_buf, const VarsOpsRaw *raw_ptr, Tree *ret )
+{
+    assert(parsed_buf.tokens);
+    assert(raw_ptr);
+    assert(ret);
+
+    Tree tree = {};
+    tree_ctor(&tree, sizeof(ExprNodeData), NULL, expr_node_data_print);
+
+
+
+
+    *ret = tree;
+
+    return DIFF_STATUS_OK;
+}
+
+Expression diff_assemble_expression(    Tree *expr_tree,
+                                        char** vars_names,
+                                        size_t vars_names_len )
+{
+    assert(expr_tree);
+    assert(vars_names);
+
+    Expression expr     = {};
+
+    expr.expr_tree      = *expr_tree;
+    expr.vars_names_len = vars_names_len;
+    expr.vars_names = (char**) calloc( vars_names_len, sizeof(char*) );
+    for (size_t ind = 0; ind < vars_names_len; ind++)
+    {
+        expr.vars_names[ind] = strdup( vars_names[ind] );
+    }
+
+    return expr;
+}
+
+void parsed_file_buf_dtor( ParsedFileBuf *parsed_buf_ptr )
+{
+    if ( parsed_buf_ptr )
+    {
+        FREE(parsed_buf_ptr->tokens);
+
+        parsed_buf_ptr->n_tokens = 0;
+    }
+}
+
+void vars_ops_raw_dtor( VarsOpsRaw *vars_ops_raw_ptr )
+{
+    if ( vars_ops_raw_ptr )
+    {
+        FREE(vars_ops_raw_ptr->ops_bin_for_parsing);
+        FREE(vars_ops_raw_ptr->ops_unr_for_parsing);
+        FREE(vars_ops_raw_ptr->vars_for_parsing);
+        FREE(vars_ops_raw_ptr->vars_names);
+        vars_ops_raw_ptr->n_ops_bin     = 0;
+        vars_ops_raw_ptr->n_ops_unr     = 0;
+        vars_ops_raw_ptr->n_vars        = 0;
+        vars_ops_raw_ptr->n_var_names   = 0;
+    }
 }

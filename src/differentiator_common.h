@@ -22,16 +22,11 @@ enum DiffStatus
 //! @note Every variable is assigned an id, starting from zero. This very id
 //! is used to get string, containing variable's name.
 //! @note VARIABLE'S NAMES CONTAIN ONLY LETTERS!
-struct Vars
-{
-    char **vars_names   = NULL; //< Contains variable's names.
-    size_t vars_len     = 0;    //< Length of 'vars' array.
-};
-
 struct Expression
 {
-    Tree expr_tree  = {};   //< Expression itself.
-    Vars vars       = {};   //< Variables, used in the expression.
+    Tree expr_tree                  = {};   //< Expression itself.
+    char **vars_names  = NULL; //< Contains variable's names.
+    size_t vars_names_len           = 0;    //< Length of 'vars' array.
 };
 
 enum ExprNodeType
@@ -169,6 +164,8 @@ void diff_insert_op_bin_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_b
 
 #define size_of_arr(arr) (sizeof(arr)/sizeof(*arr))
 
-#define FREE(ptr) do { if (ptr) free(ptr); } while(0)
+#define FREE(ptr) do { if (ptr) free(ptr); ptr = NULL; } while(0)
+
+void expr_node_data_print( FILE* stream, void *data_ptr );
 
 #endif /* DIFF_COMMON_H */

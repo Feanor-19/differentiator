@@ -68,10 +68,10 @@ DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret );
 
 void realloc_arr_if_needed( void **arr, size_t *arr_cap_ptr, size_t arr_ind, size_t elem_size );
 
-#define REALLOC_ARR_WRP(arr, elem_t) do {                                       \
-    realloc_arr_if_needed( (void**) &arr, &arr##_cap, arr##_ind, sizeof(elem_t) );       \
-    if (!arr)                                                                   \
-        return DIFF_STATUS_ERROR_MEM_ALLOC;                                     \
+#define REALLOC_ARR_WRP(arr, elem_t) do {                                               \
+    realloc_arr_if_needed( (void**) &arr, &arr##_cap, arr##_ind, sizeof(elem_t) );      \
+    if (!arr)                                                                           \
+        return DIFF_STATUS_ERROR_MEM_ALLOC;                                             \
 } while (0)
 
 //! @brief Returns 1 if token contains olny letters, 0 otherwise.
@@ -83,7 +83,27 @@ op_unr_t check_is_token_op_unr( const char *token );
 //! @brief Returns 0 if token isn't an binary operator, and binary operator's id otherwise
 op_bin_t check_is_token_op_bin( const char *token );
 
-DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret);
+//! @brief Scans full parsed_buf and assembles VarsOpsRaw, which makes assembling expression tree
+//! a lot easier.
+//! @details Formed VarsOpsRaw allows to instantly understand whether token
+//! (specified by its index in parsed_buf.tokens) is a variable or an operator, and also get
+//! variable's and operator's id accordingly.
+//! @param [in] parsed_buf ParsedFileBuf.
+//! @param [out] ret Is used to return VarsOpsRaw.
+DiffStatus diff_assemble_vars_ops_raw( ParsedFileBuf parsed_buf, VarsOpsRaw *ret );
 
+//TODO - добавить описание после написания ф-ии
+DiffStatus diff_assemble_expr_tree( ParsedFileBuf parsed_buf, const VarsOpsRaw *raw_ptr, Tree *ret );
+
+//! @brief Assembles Expression. MAKES A COPY OF vars_names, because otherwise it would have
+//! pointers to memory, allocated for ParsedFileBuf and VarsOpsRaw, which must be deconstructed right
+//! after the call of this function.
+Expression diff_assemble_expression(    Tree *expr_tree,
+                                        char** vars_names,
+                                        size_t vars_names_len );
+
+void parsed_file_buf_dtor( ParsedFileBuf *parsed_buf_ptr );
+
+void vars_ops_raw_dtor( VarsOpsRaw *vars_ops_raw_ptr );
 
 #endif /* DIFF_INPUT_H */
