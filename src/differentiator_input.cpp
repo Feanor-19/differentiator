@@ -57,21 +57,20 @@ DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret )
     return DIFF_STATUS_OK;
 }
 
-void *realloc_arr_if_needed( void *arr, size_t *arr_cap_ptr, size_t vars_ind, size_t elem_size )
+void realloc_arr_if_needed( void **arr_ptr, size_t *arr_cap_ptr, size_t arr_ind, size_t elem_size )
 {
-    if ( vars_ind >= *arr_cap_ptr )
+    if ( arr_ind >= *arr_cap_ptr )
     {
         size_t new_cap = REALLOC_DEFAULT_MULTIPLIER * (*arr_cap_ptr);
-        void *new_mem = (void*) realloc( arr, new_cap*elem_size );
+        void *new_mem = (void*) realloc( *arr_ptr, new_cap*elem_size );
         if (!new_mem)
         {
-            free(arr);
-            return NULL;
+            free(*arr_ptr);
+            *arr_ptr = NULL;
         }
-        arr = new_mem;
+        *arr_ptr = new_mem;
         *arr_cap_ptr = new_cap;
     }
-    return arr;
 }
 
 int check_does_token_contain_only_letters( const char *token )
@@ -91,7 +90,7 @@ op_unr_t check_is_token_op_unr( const char *token )
 {
     assert(token);
 
-    for (size_t op_id = 1; op_id < size_of_arr(op_unr_list); op_id++ )
+    for (op_unr_t op_id = 1; op_id < size_of_arr(op_unr_list); op_id++ )
     {
         if ( strcmp( token, op_unr_list[op_id].name ) == 0 )
         {
@@ -105,7 +104,7 @@ op_bin_t check_is_token_op_bin( const char *token )
 {
     assert(token);
 
-    for (size_t op_id = 1; op_id < size_of_arr(op_bin_list); op_id++ )
+    for (op_bin_t op_id = 1; op_id < size_of_arr(op_bin_list); op_id++ )
     {
         if ( strcmp( token, op_bin_list[op_id].name ) == 0 )
         {
@@ -118,13 +117,13 @@ op_bin_t check_is_token_op_bin( const char *token )
 //! @brief Receieves token, which DEFINITELY contains a variable,
 //! and array of structs VarForParsing. Determines whether this variable was met earlier or not;
 //! if yes, returns its sequantial number (id), if no, returns new sequential number.
-inline var_t get_var_id(   ParsedFileBuf parsed_buf,
-                                const char* token,
-                                VarForParsing *vars,
-                                size_t vars_len )
+inline var_t get_var_id(    ParsedFileBuf parsed_buf,
+                            const char* token,
+                            VarForParsing *vars,
+                            size_t vars_len )
 {
-    size_t max_var_id = 0;
-    for (size_t ind = 0; ind < vars_len; ind++)
+    var_t max_var_id = 0;
+    for (var_t ind = 0; ind < vars_len; ind++)
     {
         if ( strcmp( parsed_buf.tokens[ vars[ind].token_ind ], token ) == 0 )
             return vars[ind].var_id;
@@ -172,24 +171,26 @@ DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
         op_bin_t op_bin = 0;
         if ( (op_unr = check_is_token_op_unr(token) ) != 0 )
         {
+            REALLOC_ARR_WRP(ops_unr, OpUnrForParsing);
             ops_unr[ops_unr_ind].op_unr_id = op_unr;
             ops_unr[ops_unr_ind].token_ind = ind;
             ops_unr_ind++;
-            REALLOC_ARR_WRP(ops_unr, OpUnrForParsing);
         }
-        else if ( (op_bin = check_is_token_op_bin(token) ) != 0 )
+
+        if ( (op_bin = check_is_token_op_bin(token) ) != 0 )
         {
+            REALLOC_ARR_WRP(ops_bin, OpBinForParsing);
             ops_bin[ops_bin_ind].op_bin_id = op_bin;
             ops_bin[ops_bin_ind].token_ind = ind;
             ops_bin_ind++;
-            REALLOC_ARR_WRP(ops_bin, OpBinForParsing);
         }
-        else if ( check_does_token_contain_only_letters(token) )
+
+        if ( op_unr == 0 && op_bin == 0 && check_does_token_contain_only_letters(token) )
         {
+            REALLOC_ARR_WRP(vars, VarForParsing);
             vars[vars_ind].var_id       = get_var_id( parsed_buf, token, vars, vars_ind );
             vars[vars_ind].token_ind    = ind;
             vars_ind++;
-            REALLOC_ARR_WRP(vars, VarForParsing);
         }
     }
 

@@ -180,8 +180,3 @@ void diff_insert_op_bin_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_b
     node_data.op_bin = op_bin;
     tree_insert_data_as_right_child( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
-
-
-
-// TODO - ф-я читающая FileBuf и выдающая массив имен переменных
-// (который потом кладется в соотв поле структуры Expression)
