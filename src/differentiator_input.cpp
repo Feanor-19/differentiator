@@ -117,11 +117,13 @@ op_bin_t check_is_token_op_bin( const char *token )
 //! @brief Receieves token, which DEFINITELY contains a variable,
 //! and array of structs VarForParsing. Determines whether this variable was met earlier or not;
 //! if yes, returns its sequantial number (id), if no, returns new sequential number and
+//! sets '*is_new' to 1 and
 //! sets '*is_new' to 1.
 inline var_t get_var_id(    ParsedFileBuf parsed_buf,
                             const char* token,
                             VarForParsing *vars,
                             size_t vars_len,
+                            int *is_new,
                             int *is_new )
 {
     var_t max_var_id = 0;
@@ -137,6 +139,7 @@ inline var_t get_var_id(    ParsedFileBuf parsed_buf,
 
     if (vars_len == 0)
         return 0;
+    *is_new = 1;
     return max_var_id + 1;
 }
 
@@ -171,6 +174,10 @@ DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
     char **vars_names = (char**) calloc( vars_names_cap, sizeof(char*) );
     size_t vars_names_ind = 0;
 
+    size_t vars_names_cap = VARS_DEFAULT_NUMBER;
+    char **vars_names = (char**) calloc( vars_names_cap, sizeof(char*) );
+    size_t vars_names_ind = 0;
+
     for (size_t ind = 0; ind < parsed_buf.n_tokens; ind++)
     {
         char *token = parsed_buf.tokens[ind];
@@ -199,9 +206,16 @@ DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
         {
             REALLOC_ARR_WRP(vars, VarForParsing);
             int is_new = 0;
-            vars[vars_ind].var_id       = get_var_id( parsed_buf, token, vars, vars_ind, &is_new );
+            int is_new = 0;
+            vars[vars_ind].var_id       = get_var_id( parsed_buf, token, vars, vars_ind, &is_new, &is_new );
             vars[vars_ind].token_ind    = ind;
             vars_ind++;
+
+            if (is_new)
+            {
+                REALLOC_ARR_WRP(vars_names, char*);
+                vars_names[vars_names_ind++] = token;
+            }
 
             if (is_new)
             {
@@ -211,6 +225,6 @@ DiffStatus diff_get_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
         }
     }
 
-    *ret = { vars, vars_ind, ops_unr, ops_unr_ind, ops_bin, ops_bin_ind, vars_names, vars_names_ind };
+    *ret = { vars, vars_ind, ops_unr, ops_unr_ind, ops_bin, ops_bin_ind, vars_names, vars_names_ind, vars_names, vars_names_ind };
     return DIFF_STATUS_OK;
 }
