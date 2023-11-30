@@ -12,16 +12,21 @@ CFLAGS = 	-Wshadow -Winit-self -Wredundant-decls -Wcast-align -Wundef 				\
 
 OBJ = obj
 SRC = src
-LIB = lib
 
+COMMON_LIB_FOLDER = ./../../mylibs/
+LIB_NAMES 			= tree onegin
+LIB_SUBST 			= -L$(COMMON_LIB_FOLDER)$(lib_name)/bin -l$(lib_name)
+LIB_HEADERS_SUBST 	= -I $(COMMON_LIB_FOLDER)$(lib_name)/headers
+
+LIBS 		= $(foreach lib_name,$(LIB_NAMES),$(LIB_SUBST))
+LIB_HEADERS	= $(foreach lib_name,$(LIB_NAMES),$(LIB_HEADERS_SUBST))
 SOURCES 	= $(wildcard $(SRC)/*.cpp)
-LIBS		= $(wildcard $(LIB)/*.a)
 OBJFILES 	= $(patsubst $(SRC)/%,$(OBJ)/%,$(SOURCES:.cpp=.o))
 OUT 		= main.exe
 DUMP_FOLDER = .\dumps
 
 $(OUT) : $(OBJFILES)
-	@$(CC) -o $@ $(CFLAGS) $^ $(LIBS)
+	@$(CC) -o $@ $(CFLAGS) $^ $(LIB_HEADERS) $(LIBS)
 
 $(OBJ)/%.o : $(SRC)/%.cpp
 	@$(CC) -c $(CFLAGS) -o $@ $<

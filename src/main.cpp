@@ -2,6 +2,9 @@
 
 #include "differentiator.h"
 #include "differentiator_input.h"
+#include "differentiator_output.h"
+
+// TODO - детерминированный конечный автомат
 
 int main()
 {

@@ -113,7 +113,7 @@ ExprNodeType diff_get_type( const TreeNode *node_ptr );
 
 
 //! @brief Returns const, stored in given node.
-double diff_get_const( TreeNode *node_ptr );
+double diff_get_const( const TreeNode *node_ptr );
 
 //! @brief Writes given constant into given node, changing its type to const.
 void diff_write_const( Expression *expr_ptr, TreeNode *node_ptr, double cnst );
@@ -126,7 +126,7 @@ void diff_insert_const_at_right( Expression *expr_ptr, TreeNode *node_ptr, doubl
 
 
 //! @brief Returns variable, stored in given node.
-var_t diff_get_var( TreeNode *node_ptr );
+var_t diff_get_var( const TreeNode *node_ptr );
 
 //! @brief Writes given variable into given node, changing its type to variable.
 void diff_write_var( Expression *expr_ptr, TreeNode *node_ptr, var_t var );
@@ -139,7 +139,7 @@ void diff_insert_var_at_right( Expression *expr_ptr, TreeNode *node_ptr, var_t v
 
 
 //! @brief Returns unary operator, stored in given node.
-op_unr_t diff_get_op_unr( TreeNode *node_ptr );
+op_unr_t diff_get_op_unr( const TreeNode *node_ptr );
 
 //! @brief Writes given unary operator into given node, changing its type to unary operator.
 void diff_write_op_unr( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr );
@@ -150,8 +150,9 @@ void diff_insert_op_unr_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_un
 //! @brief Inserts a new node of type 'unary operator' as the right child of the given node.
 void diff_insert_op_unr_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr );
 
+
 //! @brief Returns binary operator, stored in given node.
-op_bin_t diff_get_op_bin( TreeNode *node_ptr );
+op_bin_t diff_get_op_bin( const TreeNode *node_ptr );
 
 //! @brief Writes given binary operator into given node, changing its type to binary operator.
 void diff_write_op_bin( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin );

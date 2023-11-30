@@ -5,7 +5,10 @@
             "includePath": [
                 "../../mylibheaders"
             ],
-            "configurationProvider": "ms-vscode.makefile-tools"
+            "configurationProvider": "ms-vscode.makefile-tools",
+            "browse": {
+                "path": ["${workspaceRoot}", "../../mylibheaders"]
+            }
         }
     ],
     "version": 4

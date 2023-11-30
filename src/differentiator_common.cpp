@@ -21,7 +21,7 @@ ExprNodeType diff_get_type( const TreeNode *node_ptr )
     return diff_get_data(node_ptr).type;
 }
 
-double diff_get_const( TreeNode *node_ptr )
+double diff_get_const( const TreeNode *node_ptr )
 {
     assert(node_ptr);
 
@@ -61,7 +61,7 @@ void diff_insert_const_at_right( Expression *expr_ptr, TreeNode *node_ptr, doubl
     tree_insert_data_as_right_child( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
-var_t diff_get_var( TreeNode *node_ptr )
+var_t diff_get_var( const TreeNode *node_ptr )
 {
     assert(node_ptr);
 
@@ -101,7 +101,7 @@ void diff_insert_var_at_right( Expression *expr_ptr, TreeNode *node_ptr, var_t v
     tree_insert_data_as_right_child( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
-op_unr_t diff_get_op_unr( TreeNode *node_ptr )
+op_unr_t diff_get_op_unr( const TreeNode *node_ptr )
 {
     assert(node_ptr);
 
@@ -141,7 +141,7 @@ void diff_insert_op_unr_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_u
     tree_insert_data_as_right_child( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
-op_bin_t diff_get_op_bin( TreeNode *node_ptr )
+op_bin_t diff_get_op_bin( const TreeNode *node_ptr )
 {
     assert(node_ptr);
 
