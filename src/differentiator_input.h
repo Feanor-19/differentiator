@@ -6,8 +6,9 @@
 
 struct ParsedFileBuf
 {
-    char **tokens   = NULL;
-    size_t n_tokens = 0;
+    char *tokens_buf    = NULL; //< All tokens are stored here, one by one.
+    char **tokens       = NULL; //< Array of pointers to tokens, stored in tokens_buf.
+    size_t n_tokens     = 0;    //< Number of tokens (length of the array `tokens`).
 };
 
 struct VarForParsing
@@ -53,6 +54,12 @@ struct VarsOpsRaw
 
 };
 
+enum DFAStates
+{
+    DFA_START,
+    DFA_WORD,
+};
+
 
 const size_t REALLOC_DEFAULT_MULTIPLIER = 2;
 const size_t TOKENS_DEFAULT_LEN         = 10;
@@ -63,6 +70,15 @@ const size_t OPS_BIN_DEFAULT_NUMBER     = 5;
 
 //! @brief Detaches all non letters and non digits, separating with spaces.
 void preprocess_detach_not_alnums(FileBuf *file_buf_ptr);
+
+//! @note Is called from my_strtok!!!!
+void print_dfa_error( char *file_buf, size_t err_ind );
+
+char *my_strtok(char *tokens_buf,
+                size_t *tokens_buf_cap,
+                size_t *tokens_buf_ind,
+                DiffStatus *err,
+                char *file_buf = NULL);
 
 DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret );
 

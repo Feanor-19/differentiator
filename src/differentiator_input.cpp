@@ -33,8 +33,118 @@ void preprocess_detach_not_alnums(FileBuf *file_buf_ptr)
     file_buf_ptr->buf_size = new_buf_ind;
 }
 
+inline void write_char_to_token_buf( char *tokens_buf,
+                                     size_t *tokens_buf_cap,
+                                     size_t *tokens_buf_ind,
+                                     char c )
+{
+    assert(tokens_buf);
+    assert(tokens_buf_cap);
+    assert(tokens_buf_ind);
+
+    realloc_arr_if_needed((void**) &tokens_buf, tokens_buf_cap, *tokens_buf_ind, sizeof(char));
+
+    tokens_buf[(*tokens_buf_ind)++] = c;
+}
+
+void print_dfa_error( char *file_buf, size_t err_ind)
+{
+    assert(file_buf);
+    // печатает часть file_buf ДО err_ind (символов 20, но не вылезая за самое начало!!)
+    // TODO -
+}
+
+char *my_strtok(char *tokens_buf,
+                size_t *tokens_buf_cap,
+                size_t *tokens_buf_ind,
+                DiffStatus *err,
+                char *file_buf = NULL)
+{
+    assert(tokens_buf);
+    assert(tokens_buf_cap);
+    assert(tokens_buf_ind);
+
+    static char *file_buf_start = NULL;
+    static char *file_buf_ptr   = NULL;
+    if (file_buf)
+    {
+        // first run
+        file_buf_ptr    = file_buf;
+        file_buf_start  = file_buf;
+    }
+
+    DFAStates state = DFA_START;
+    char *token_start = NULL;
+    while (1)
+    {
+        switch (state)
+        {
+        case DFA_START:
+            if ( *file_buf_ptr == ' ' )
+            {
+                file_buf_ptr++;
+            }
+            else if ( *file_buf_ptr == '\0' )
+            {
+                return NULL;
+            }
+            else
+            {
+                state = DFA_WORD;
+                token_start = tokens_buf + *tokens_buf_ind;
+                write_char_to_token_buf( tokens_buf, tokens_buf_cap, tokens_buf_ind, *file_buf_ptr );
+                file_buf_ptr++;
+            }
+            break;
+        case DFA_WORD:
+            if ( *file_buf_ptr == ' ' || *file_buf_ptr == '\0' )
+            {
+                write_char_to_token_buf( tokens_buf, tokens_buf_cap, tokens_buf_ind, '\0');
+                return token_start;
+            }
+            else
+            {
+                write_char_to_token_buf( tokens_buf, tokens_buf_cap, tokens_buf_ind, *file_buf_ptr );
+                file_buf_ptr++;
+            }
+        default:
+            assert(0 && "Unknown DKA state!");
+            break;
+        }
+    }
+
+}
+
 DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret )
 {
+    assert(file_buf.buf);
+    assert(ret);
+
+    size_t tokens_buf_cap = file_buf.buf_size;
+    char *tokens_buf = (char *) calloc( tokens_buf_cap, sizeof(char) );
+    size_t tokens_buf_ind = 0;
+
+    size_t tokens_cap = TOKENS_DEFAULT_LEN;
+    char **tokens = (char **) calloc( tokens_cap, sizeof(char*) );
+    size_t tokens_ind = 0;
+
+    DiffStatus err = DIFF_STATUS_OK;
+    char *curr_token = my_strtok( tokens_buf, &tokens_buf_cap, &tokens_ind, &err, file_buf.buf );
+    while (curr_token != NULL)
+    {
+        tokens[tokens_ind++] = curr_token;
+        REALLOC_ARR_WRP(tokens, char*);
+
+        curr_token = my_strtok(tokens_buf, &tokens_buf_cap, &tokens_ind, &err);
+    }
+
+    if (err)
+        return DIFF_STATUS_ERROR_DFA;
+
+    *ret = {tokens_buf, tokens, tokens_ind};
+    return DIFF_STATUS_OK;
+
+    /*
     assert(file_buf.buf);
     assert(ret);
 
@@ -55,6 +165,7 @@ DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret )
 
     *ret = {tokens, tokens_ind};
     return DIFF_STATUS_OK;
+    */
 }
 
 void realloc_arr_if_needed( void **arr_ptr, size_t *arr_cap_ptr, size_t arr_ind, size_t elem_size )
@@ -257,7 +368,7 @@ void parsed_file_buf_dtor( ParsedFileBuf *parsed_buf_ptr )
     if ( parsed_buf_ptr )
     {
         FREE(parsed_buf_ptr->tokens);
-
+        FREE(parsed_buf_ptr->tokens_buf);
         parsed_buf_ptr->n_tokens = 0;
     }
 }

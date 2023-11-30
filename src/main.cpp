@@ -26,11 +26,12 @@ int main()
         return err;
     }
 
+    buf_free(&file_buf); // ??? because all tokens are now stored in parsed_buf.tokens_buf??
+
     VarsOpsRaw vars_ops_raw = { NULL, 0, NULL, 0, NULL, 0 };
     err = diff_assemble_vars_ops_raw( parsed_file, &vars_ops_raw );
     if (err)
     {
-        buf_free(&file_buf);
         parsed_file_buf_dtor(&parsed_file);
         vars_ops_raw_dtor(&vars_ops_raw);
 
@@ -74,7 +75,6 @@ int main()
     err = diff_assemble_expr_tree(parsed_file, &vars_ops_raw, &expr_tree);
     if (err)
     {
-        buf_free(&file_buf);
         parsed_file_buf_dtor(&parsed_file);
         vars_ops_raw_dtor(&vars_ops_raw);
         tree_dtor(&expr_tree);
@@ -85,7 +85,6 @@ int main()
 
     Expression expr = diff_assemble_expression( &expr_tree, vars_ops_raw.vars_names, vars_ops_raw.n_var_names );
 
-    buf_free(&file_buf);
     parsed_file_buf_dtor(&parsed_file);
     vars_ops_raw_dtor(&vars_ops_raw);
 
