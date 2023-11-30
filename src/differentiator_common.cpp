@@ -39,6 +39,16 @@ void diff_write_const( Expression *expr_ptr, TreeNode *node_ptr, double cnst )
     tree_change_data( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
+void diff_insert_const_as_root( Expression *expr_ptr, double cnst )
+{
+    assert(expr_ptr);
+
+    ExprNodeData node_data = {};
+    node_data.type = CONST;
+    node_data.cnst = cnst;
+    tree_insert_root( &expr_ptr->expr_tree, &node_data );
+}
+
 void diff_insert_const_at_left( Expression *expr_ptr, TreeNode *node_ptr, double cnst )
 {
     assert(expr_ptr);
@@ -77,6 +87,16 @@ void diff_write_var( Expression *expr_ptr, TreeNode *node_ptr, var_t var )
     node_data.type = VAR;
     node_data.var = var;
     tree_change_data( &expr_ptr->expr_tree, node_ptr, &node_data );
+}
+
+void diff_insert_var_as_root( Expression *expr_ptr, var_t var )
+{
+    assert(expr_ptr);
+
+    ExprNodeData node_data = {};
+    node_data.type = VAR;
+    node_data.var = var;
+    tree_insert_root( &expr_ptr->expr_tree, &node_data );
 }
 
 void diff_insert_var_at_left( Expression *expr_ptr, TreeNode *node_ptr, var_t var )
@@ -119,6 +139,16 @@ void diff_write_op_unr( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_un
     tree_change_data( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
+void diff_insert_op_unr_as_root( Expression *expr_ptr, op_unr_t op_unr )
+{
+    assert(expr_ptr);
+
+    ExprNodeData node_data = {};
+    node_data.type = OP_UNR;
+    node_data.op_unr = op_unr;
+    tree_insert_root( &expr_ptr->expr_tree, &node_data );
+}
+
 void diff_insert_op_unr_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr )
 {
     assert(expr_ptr);
@@ -159,6 +189,16 @@ void diff_write_op_bin( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bi
     tree_change_data( &expr_ptr->expr_tree, node_ptr, &node_data );
 }
 
+void diff_insert_op_bin_as_root( Expression *expr_ptr, op_bin_t op_bin )
+{
+    assert(expr_ptr);
+
+    ExprNodeData node_data = {};
+    node_data.type = OP_BIN;
+    node_data.op_bin = op_bin;
+    tree_insert_root( &expr_ptr->expr_tree, &node_data );
+}
+
 void diff_insert_op_bin_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin )
 {
     assert(expr_ptr);
@@ -187,27 +227,27 @@ void expr_node_data_print( FILE* stream, void *data_ptr )
     assert(data_ptr);
 
     ExprNodeData *ptr = (ExprNodeData*) data_ptr;
-    fprintf(stream, "{");
+    fprintf(stream, "[");
     switch(ptr->type)
     {
         case ERROR:
             fprintf(stream, "ERROR");
             break;
         case CONST:
-            fprintf(stream, "type: CONST; value: <%lf>", ptr->cnst);
+            fprintf(stream, "type: CONST; value: %lf", ptr->cnst);
             break;
         case VAR:
-            fprintf(stream, "type: VAR; var_id: <%d>", ptr->var);
+            fprintf(stream, "type: VAR; var_id: %d", ptr->var);
             break;
         case OP_UNR:
-            fprintf(stream, "type: OP_UNR; op_unr_id: <%d>", ptr->op_unr);
+            fprintf(stream, "type: OP_UNR; op_unr_id: %d, %s", ptr->op_unr, op_unr_list[ptr->op_unr].name);
             break;
         case OP_BIN:
-            fprintf(stream, "type: OP_BIN; op_bin_id: <%d>", ptr->op_bin);
+            fprintf(stream, "type: OP_BIN; op_bin_id: %d, %s", ptr->op_bin, op_bin_list[ptr->op_bin].name);
             break;
         default:
             assert(0);
             break;
     }
-    fprintf(stream, "}");
+    fprintf(stream, "]");
 }

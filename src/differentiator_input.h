@@ -6,9 +6,10 @@
 
 struct ParsedFileBuf
 {
-    char *tokens_buf    = NULL; //< All tokens are stored here, one by one.
-    char **tokens       = NULL; //< Array of pointers to tokens, stored in tokens_buf.
-    size_t n_tokens     = 0;    //< Number of tokens (length of the array `tokens`).
+    //char *tokens_buf    = NULL; //< All tokens are stored here, one by one.
+    char **tokens           = NULL; //< Array of pointers to tokens, stored in tokens_buf.
+    size_t n_tokens         = 0;    //< Number of tokens (length of the array `tokens`).
+    size_t curr_token_ind   = 0;
 };
 
 struct VarForParsing
@@ -74,7 +75,7 @@ void preprocess_detach_not_alnums(FileBuf *file_buf_ptr);
 //! @note Is called from my_strtok!!!!
 void print_dfa_error( char *file_buf, size_t err_ind );
 
-char *my_strtok(char *tokens_buf,
+char *my_strtok(char **tokens_buf_ptr,
                 size_t *tokens_buf_cap,
                 size_t *tokens_buf_ind,
                 DiffStatus *err,
@@ -109,7 +110,7 @@ op_bin_t check_is_token_op_bin( const char *token );
 DiffStatus diff_assemble_vars_ops_raw( ParsedFileBuf parsed_buf, VarsOpsRaw *ret );
 
 //TODO - добавить описание после написания ф-ии
-DiffStatus diff_assemble_expr_tree( ParsedFileBuf parsed_buf, const VarsOpsRaw *raw_ptr, Tree *ret );
+DiffStatus diff_assemble_expr_tree( ParsedFileBuf *parsed_buf, const VarsOpsRaw *raw_ptr, Tree *ret );
 
 //! @brief Assembles Expression. MAKES A COPY OF vars_names, because otherwise it would have
 //! pointers to memory, allocated for ParsedFileBuf and VarsOpsRaw, which must be deconstructed right

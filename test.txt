@@ -1,2 +1,1 @@
-(x + y)/(sqrt(x ^ (y/2) - z*(v+z + x) )) +
-7 * x*y ^ (z ^ v)
+(x + y)* sqrt( x ^ 3) + x/ y -  3*z

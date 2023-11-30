@@ -14,7 +14,7 @@ int main()
 
     // debug
     printf("<%s>\n", file_buf.buf);
-    // deibg end
+    // debug end
 
     ParsedFileBuf parsed_file = {};
     DiffStatus err = parse_file_buf(file_buf, &parsed_file);
@@ -26,7 +26,7 @@ int main()
         return err;
     }
 
-    buf_free(&file_buf); // ??? because all tokens are now stored in parsed_buf.tokens_buf??
+    // buf_free(&file_buf); // ??? because all tokens are now stored in parsed_buf.tokens_buf??
 
     VarsOpsRaw vars_ops_raw = { NULL, 0, NULL, 0, NULL, 0 };
     err = diff_assemble_vars_ops_raw( parsed_file, &vars_ops_raw );
@@ -72,7 +72,7 @@ int main()
     // debug end
 
     Tree expr_tree = {};
-    err = diff_assemble_expr_tree(parsed_file, &vars_ops_raw, &expr_tree);
+    err = diff_assemble_expr_tree(&parsed_file, &vars_ops_raw, &expr_tree);
     if (err)
     {
         parsed_file_buf_dtor(&parsed_file);
@@ -91,6 +91,31 @@ int main()
     // end of input
 
     // ...some work with expression...
+
+    // debug
+    diff_insert_op_bin_as_root(&expr, 3);
+    TreeNode *root = tree_get_root( &expr.expr_tree );
+    diff_insert_op_bin_at_left(&expr, root, 1);
+    TreeNode *left_of_root = tree_get_left_child(root);
+    diff_insert_var_at_left(&expr, left_of_root, 0);
+    diff_insert_const_at_right(&expr, left_of_root, 2);
+    diff_insert_op_unr_at_right(&expr, root, 3);
+    TreeNode *right_of_root = tree_get_right_child(root);
+    diff_insert_op_bin_at_left(&expr, right_of_root, 5);
+    TreeNode *lr_of_root = tree_get_left_child(right_of_root);
+    diff_insert_var_at_left(&expr, lr_of_root, 1);
+    diff_insert_const_at_right(&expr, lr_of_root, 3);
+
+    diff_print_expr(stdout, &expr);
+    printf("\n");
+
+    TREE_DUMP(&expr.expr_tree, 0);
+
+    double arr[] = {-1, 4, 0};
+    printf("ttt %g\n", pow(-3, 3));
+    double x = diff_evaluate( &expr, arr );
+    fprintf(stdout, "Result: <%g>", x);
+    // debug end
 
 
     diff_expr_dtor(&expr);
