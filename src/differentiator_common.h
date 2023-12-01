@@ -38,6 +38,13 @@ enum ExprNodeType
     OP_BIN,
 };
 
+enum Child
+{
+    ROOT,
+    LEFT,
+    RIGHT,
+};
+
 struct ExprNodeData
 {
     ExprNodeType type = CONST;
@@ -127,7 +134,8 @@ void diff_insert_const_at_left( Tree *expr_tree, TreeNode *node_ptr, double cnst
 //! @brief Inserts a new node of type 'const' as the right child of the given node.
 void diff_insert_const_at_right( Tree *expr_tree, TreeNode *node_ptr, double cnst );
 
-// void diff_insert_const( Expression *expr_ptr, Tree )
+//! @brief Inserts a new node of type 'const' as the specified child of the given node.
+void diff_insert_const( Tree *expr_tree, TreeNode *node_ptr, double cnst, Child child );
 
 
 //! @brief Returns variable, stored in given node.
@@ -145,6 +153,9 @@ void diff_insert_var_at_left( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 //! @brief Inserts a new node of type 'variable' as the right child of the given node.
 void diff_insert_var_at_right( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 
+//! @brief Inserts a new node of type 'var' as the specified child of the given node.
+void diff_insert_var( Tree *expr_tree, TreeNode *node_ptr, var_t var, Child child );
+
 
 //! @brief Returns unary operator, stored in given node.
 op_unr_t diff_get_op_unr( const TreeNode *node_ptr );
@@ -161,6 +172,9 @@ void diff_insert_op_unr_at_left( Tree *expr_tree, TreeNode *node_ptr, op_unr_t o
 //! @brief Inserts a new node of type 'unary operator' as the right child of the given node.
 void diff_insert_op_unr_at_right( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr );
 
+//! @brief Inserts a new node of type 'op_unr' as the specified child of the given node.
+void diff_insert_op_unr( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr, Child child );
+
 
 //! @brief Returns binary operator, stored in given node.
 op_bin_t diff_get_op_bin( const TreeNode *node_ptr );
@@ -176,6 +190,9 @@ void diff_insert_op_bin_at_left( Tree *expr_tree, TreeNode *node_ptr, op_bin_t o
 
 //! @brief Inserts a new node of type 'binary operator' as the right child of the given node.
 void diff_insert_op_bin_at_right( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin );
+
+//! @brief Inserts a new node of type 'op_bin' as the specified child of the given node.
+void diff_insert_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin, Child child );
 
 #define size_of_arr(arr) (sizeof(arr)/sizeof(*arr))
 

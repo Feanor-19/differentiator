@@ -4,14 +4,6 @@
 #include "differentiator_common.h"
 
 
-enum Child
-{
-    ROOT,
-    LEFT,
-    RIGHT,
-};
-
-
 double diff_evaluate( Expression *expr_ptr, const double *var_values );
 
 void diff_node( const Tree *src_tree,
