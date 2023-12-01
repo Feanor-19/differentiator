@@ -116,64 +116,66 @@ ExprNodeType diff_get_type( const TreeNode *node_ptr );
 double diff_get_const( const TreeNode *node_ptr );
 
 //! @brief Writes given constant into given node, changing its type to const.
-void diff_write_const( Expression *expr_ptr, TreeNode *node_ptr, double cnst );
+void diff_write_const( Tree *expr_tree, TreeNode *node_ptr, double cnst );
 
 //! @brief Inserts a new node of type 'const' as the root of the tree.
-void diff_insert_const_as_root( Expression *expr_ptr, double cnst );
+void diff_insert_const_as_root( Tree *expr_tree, double cnst );
 
 //! @brief Inserts a new node of type 'const' as the left child of the given node.
-void diff_insert_const_at_left( Expression *expr_ptr, TreeNode *node_ptr, double cnst );
+void diff_insert_const_at_left( Tree *expr_tree, TreeNode *node_ptr, double cnst );
 
 //! @brief Inserts a new node of type 'const' as the right child of the given node.
-void diff_insert_const_at_right( Expression *expr_ptr, TreeNode *node_ptr, double cnst );
+void diff_insert_const_at_right( Tree *expr_tree, TreeNode *node_ptr, double cnst );
+
+// void diff_insert_const( Expression *expr_ptr, Tree )
 
 
 //! @brief Returns variable, stored in given node.
 var_t diff_get_var( const TreeNode *node_ptr );
 
 //! @brief Writes given variable into given node, changing its type to variable.
-void diff_write_var( Expression *expr_ptr, TreeNode *node_ptr, var_t var );
+void diff_write_var( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 
 //! @brief Inserts a new node of type 'var' as the root of the tree.
-void diff_insert_var_as_root( Expression *expr_ptr, var_t var );
+void diff_insert_var_as_root( Tree *expr_tree, var_t var );
 
 //! @brief Inserts a new node of type 'variable' as the left child of the given node.
-void diff_insert_var_at_left( Expression *expr_ptr, TreeNode *node_ptr, var_t var );
+void diff_insert_var_at_left( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 
 //! @brief Inserts a new node of type 'variable' as the right child of the given node.
-void diff_insert_var_at_right( Expression *expr_ptr, TreeNode *node_ptr, var_t var );
+void diff_insert_var_at_right( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 
 
 //! @brief Returns unary operator, stored in given node.
 op_unr_t diff_get_op_unr( const TreeNode *node_ptr );
 
 //! @brief Writes given unary operator into given node, changing its type to unary operator.
-void diff_write_op_unr( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr );
+void diff_write_op_unr( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr );
 
 //! @brief Inserts a new node of type 'op_unr' as the root of the tree.
-void diff_insert_op_unr_as_root( Expression *expr_ptr, op_unr_t op_unr );
+void diff_insert_op_unr_as_root( Tree *expr_tree, op_unr_t op_unr );
 
 //! @brief Inserts a new node of type 'unary operator' as the left child of the given node.
-void diff_insert_op_unr_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr );
+void diff_insert_op_unr_at_left( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr );
 
 //! @brief Inserts a new node of type 'unary operator' as the right child of the given node.
-void diff_insert_op_unr_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_unr_t op_unr );
+void diff_insert_op_unr_at_right( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr );
 
 
 //! @brief Returns binary operator, stored in given node.
 op_bin_t diff_get_op_bin( const TreeNode *node_ptr );
 
 //! @brief Writes given binary operator into given node, changing its type to binary operator.
-void diff_write_op_bin( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin );
+void diff_write_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin );
 
 //! @brief Inserts a new node of type 'op_bin' as the root of the tree.
-void diff_insert_op_bin_as_root( Expression *expr_ptr, op_bin_t op_bin );
+void diff_insert_op_bin_as_root( Tree *expr_tree, op_bin_t op_bin );
 
 //! @brief Inserts a new node of type 'binary operator' as the left child of the given node.
-void diff_insert_op_bin_at_left( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin );
+void diff_insert_op_bin_at_left( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin );
 
 //! @brief Inserts a new node of type 'binary operator' as the right child of the given node.
-void diff_insert_op_bin_at_right( Expression *expr_ptr, TreeNode *node_ptr, op_bin_t op_bin );
+void diff_insert_op_bin_at_right( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin );
 
 #define size_of_arr(arr) (sizeof(arr)/sizeof(*arr))
 

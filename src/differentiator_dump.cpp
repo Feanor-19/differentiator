@@ -53,7 +53,7 @@ inline void write_dot_file( FILE *dot_file, Expression *expr )
             fprintf(dot_file,   "NODE_%llu[shape=\"record\", fontname=\"verdana\",\n"
                                 "style=bold, style=filled,\ncolor=\"" COLOR_NODE_COLOR "\""
                                 ", fillcolor=\"" COLOR_CONST_NODE_FILL "\",\n"
-                                "label = %lf];\n\n",
+                                "label = %g];\n\n",
                                 ind, node_data.cnst);
         }
         else if ( node_data.type == VAR )
@@ -69,7 +69,7 @@ inline void write_dot_file( FILE *dot_file, Expression *expr )
             fprintf(dot_file,   "NODE_%llu[shape=\"record\", fontname=\"verdana\",\n"
                                 "style=bold, style=filled,\ncolor=\"" COLOR_NODE_COLOR "\""
                                 ", fillcolor=\"" COLOR_OP_NODE_FILL "\",\n"
-                                "label = %s];\n\n",
+                                "label = \"%s\"];\n\n",
                                 ind, op_bin_list[node_data.op_bin].name);
         }
         else if ( node_data.type == OP_UNR )
@@ -77,8 +77,8 @@ inline void write_dot_file( FILE *dot_file, Expression *expr )
             fprintf(dot_file,   "NODE_%llu[shape=\"record\", fontname=\"verdana\",\n"
                                 "style=bold, style=filled,\ncolor=\"" COLOR_NODE_COLOR "\""
                                 ", fillcolor=\"" COLOR_OP_NODE_FILL "\",\n"
-                                "label = %s];\n\n",
-                                ind, op_bin_list[node_data.op_bin].name);
+                                "label = \"%s\"];\n\n",
+                                ind, op_unr_list[node_data.op_unr].name);
         }
 
         nodes_arr[ind] = curr_node;
@@ -154,6 +154,8 @@ void diff_dump(Expression *expr)
     FILE *file = create_and_open_dot_file();
 
     write_dot_file(file, expr);
+
+    fclose( file );
 
     run_dot_to_create_database_img();
 

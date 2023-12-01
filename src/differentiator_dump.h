@@ -4,8 +4,8 @@
 #include "differentiator_common.h"
 
 
-#define DUMP_DOT_NAME "dumps\\diff_dump.dot"
-#define DUMP_IMG_NAME "dumps\\diff_dump.jpg"
+#define DUMP_DOT_NAME ".\\dumps\\diff_dump.dot"
+#define DUMP_IMG_NAME ".\\dumps\\diff_dump.jpg"
 
 
 void diff_dump(Expression *expr);

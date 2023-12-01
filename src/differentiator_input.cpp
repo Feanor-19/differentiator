@@ -333,19 +333,16 @@ DiffStatus diff_assemble_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
     return DIFF_STATUS_OK;
 }
 
-DiffStatus diff_assemble_expr_tree( ParsedFileBuf *parsed_buf, const VarsOpsRaw *raw_ptr, Tree *ret )
+DiffStatus diff_assemble_expr_tree( ParsedFileBuf *parsed_buf, const VarsOpsRaw *raw_ptr, Tree *expr_tree )
 {
     assert(parsed_buf);
     assert(parsed_buf->tokens);
     assert(raw_ptr);
-    assert(ret);
+    assert(expr_tree);
 
-    Tree tree = {};
-    tree_ctor(&tree, sizeof(ExprNodeData), NULL, expr_node_data_print);
+    tree_ctor(expr_tree, sizeof(ExprNodeData), NULL, expr_node_data_print);
 
     // ...
-
-    *ret = tree;
 
     return DIFF_STATUS_OK;
 }
