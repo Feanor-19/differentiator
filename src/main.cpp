@@ -94,18 +94,13 @@ int main()
     // ...some work with expression...
 
     // debug
-    diff_insert_op_bin_as_root(&expr.expr_tree, 3);
-    TreeNode *root = tree_get_root( &expr.expr_tree );
-    diff_insert_op_bin_at_left(&expr.expr_tree, root, 1);
-    TreeNode *left_of_root = tree_get_left_child(root);
-    diff_insert_var_at_left(&expr.expr_tree, left_of_root, 0);
-    diff_insert_const_at_right(&expr.expr_tree, left_of_root, 2);
-    diff_insert_op_unr_at_right(&expr.expr_tree, root, 3);
-    TreeNode *right_of_root = tree_get_right_child(root);
-    diff_insert_op_bin_at_left(&expr.expr_tree, right_of_root, 5);
-    TreeNode *lr_of_root = tree_get_left_child(right_of_root);
-    diff_insert_var_at_left(&expr.expr_tree, lr_of_root, 1);
-    diff_insert_const_at_right(&expr.expr_tree, lr_of_root, 4);
+    diff_insert_op_bin_as_root(&expr.expr_tree, OP_MUL);
+    TreeNode *root = tree_get_root(&expr.expr_tree);
+    diff_insert_var_at_left(&expr.expr_tree, root, 0);
+    diff_insert_op_bin_at_right(&expr.expr_tree, root, OP_ADD);
+    TreeNode *r_of_root = tree_get_right_child(root);
+    diff_insert_var_at_left(&expr.expr_tree, r_of_root, 0);
+    diff_insert_const_at_right(&expr.expr_tree, r_of_root, 19);
 
     diff_print_expr(stdout, &expr);
     printf("\n");
@@ -114,11 +109,23 @@ int main()
 
     double arr[] = {-1, 4, 0};
     double x = diff_evaluate( &expr, arr );
-    fprintf(stdout, "Result: <%g>", x);
+    fprintf(stdout, "Result: <%g>\n", x);
+
+    Expression diffed_expr = diff_diff(&expr, 0);
+
+    TREE_DUMP(&diffed_expr.expr_tree, 0);
+    diff_dump(&diffed_expr);
+
+    printf("Diffed expression: ");
+    diff_print_expr(stdout, &diffed_expr);
+    printf("\n");
     // debug end
 
 
     diff_expr_dtor(&expr);
+    diff_expr_dtor(&diffed_expr);
+
+    printf("all is good...\n");
 
     return 0;
 }

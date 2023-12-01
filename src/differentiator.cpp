@@ -46,24 +46,40 @@ double diff_evaluate( Expression *expr_ptr, const double *var_values )
 }
 
 void diff_node( const Tree *src_tree,
-                const TreeNode *diff_node,
+                const TreeNode *node_to_diff,
                 Tree *new_tree,
                 TreeNode *parent_node_ptr,
                 Child child,
                 var_t diff_by )
 {
     assert(src_tree);
-    assert(diff_node);
+    assert(node_to_diff);
     assert(new_tree);
-    assert(parent_node_ptr);
 
-    switch (diff_get_type(diff_node))
+    switch (diff_get_type(node_to_diff))
     {
     case CONST:
-
+        diff_insert_const(new_tree, parent_node_ptr, 0, child);
         break;
-
+    case VAR:
+        if ( diff_get_var(node_to_diff) == diff_by )
+            diff_insert_const(new_tree, parent_node_ptr, 1, child);
+        else
+            diff_insert_const(new_tree, parent_node_ptr, 0, child);
+        break;
+    case OP_UNR:
+        op_unr_list[ diff_get_op_unr(node_to_diff) ].diff_op(src_tree, node_to_diff,
+                                                            new_tree, parent_node_ptr,
+                                                            child, diff_by);
+        break;
+    case OP_BIN:
+        op_bin_list[ diff_get_op_bin(node_to_diff) ].diff_op(src_tree, node_to_diff,
+                                                            new_tree, parent_node_ptr,
+                                                            child, diff_by);
+        break;
+    case ERROR:
     default:
+        assert(0);
         break;
     }
 }

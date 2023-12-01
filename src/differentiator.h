@@ -15,6 +15,8 @@ void diff_node( const Tree *src_tree,
 
 Expression diff_diff( const Expression *expr_ptr, var_t diff_by );
 
+int diff_fold_constants( Expression *expr_ptr, TreeNode *node_ptr );
+
 void diff_expr_dtor( Expression *expr_ptr );
 
 #endif /* DIFF_H */

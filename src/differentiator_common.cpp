@@ -1,5 +1,7 @@
 #include "differentiator_common.h"
 
+#include "differentiator.h"
+
 #include <assert.h>
 
 void diff_print_status_message( FILE *stream, DiffStatus status )
@@ -19,6 +21,29 @@ ExprNodeType diff_get_type( const TreeNode *node_ptr )
     assert(node_ptr);
 
     return diff_get_data(node_ptr).type;
+}
+
+TreeNode* diff_get_child( const Tree* tree_ptr, const TreeNode* node_ptr, Child child )
+{
+    assert(tree_ptr);
+
+    switch (child)
+    {
+    case ROOT:
+        return tree_get_root(tree_ptr);
+        break;
+    case LEFT:
+        return tree_get_left_child(node_ptr);
+        break;
+    case RIGHT:
+        return tree_get_right_child(node_ptr);
+        break;
+    default:
+        assert(0);
+        break;
+    }
+    assert(0);
+    return NULL;
 }
 
 double diff_get_const( const TreeNode *node_ptr )
@@ -74,7 +99,6 @@ void diff_insert_const_at_right( Tree *expr_tree, TreeNode *node_ptr, double cns
 void diff_insert_const( Tree *expr_tree, TreeNode *node_ptr, double cnst, Child child )
 {
     assert(expr_tree);
-    assert(node_ptr);
 
     switch (child)
     {
@@ -146,7 +170,6 @@ void diff_insert_var_at_right( Tree *expr_tree, TreeNode *node_ptr, var_t var )
 void diff_insert_var( Tree *expr_tree, TreeNode *node_ptr, var_t var, Child child )
 {
     assert(expr_tree);
-    assert(node_ptr);
 
     switch (child)
     {
@@ -218,7 +241,6 @@ void diff_insert_op_unr_at_right( Tree *expr_tree, TreeNode *node_ptr, op_unr_t 
 void diff_insert_op_unr( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr, Child child )
 {
     assert(expr_tree);
-    assert(node_ptr);
 
     switch (child)
     {
@@ -290,7 +312,6 @@ void diff_insert_op_bin_at_right( Tree *expr_tree, TreeNode *node_ptr, op_bin_t 
 void diff_insert_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin, Child child )
 {
     assert(expr_tree);
-    assert(node_ptr);
 
     switch (child)
     {
@@ -338,4 +359,151 @@ void expr_node_data_print( FILE* stream, void *data_ptr )
             break;
     }
     fprintf(stream, "]");
+}
+
+// diff ops
+
+void diff_op_add( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+    diff_insert_op_bin( new_tree, parent_node_ptr, OP_ADD, child );
+
+    TreeNode *node = diff_get_child(new_tree, parent_node_ptr, child);
+
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, LEFT),
+                new_tree,
+                node,
+                LEFT,
+                diff_by );
+
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, RIGHT),
+                new_tree,
+                node,
+                RIGHT,
+                diff_by );
+}
+void diff_op_sub( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
+    diff_insert_op_bin( new_tree, parent_node_ptr, OP_SUB, child );
+
+    TreeNode *node = diff_get_child(new_tree, parent_node_ptr, child);
+
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, LEFT),
+                new_tree,
+                node,
+                LEFT,
+                diff_by );
+
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, RIGHT),
+                new_tree,
+                node,
+                RIGHT,
+                diff_by );
+}
+void diff_op_mul( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+    diff_insert_op_bin( new_tree, parent_node_ptr, OP_ADD, child );
+    TreeNode *node_add = diff_get_child(new_tree, parent_node_ptr, child);
+
+    diff_insert_op_bin( new_tree, node_add, OP_MUL, LEFT );
+    TreeNode *mul_left = diff_get_child(new_tree, node_add, LEFT);
+
+    diff_insert_op_bin( new_tree, node_add, OP_MUL, RIGHT );
+    TreeNode *mul_right = diff_get_child(new_tree, node_add, RIGHT);
+
+    // left mul
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, LEFT),
+                new_tree,
+                mul_left,
+                LEFT,
+                diff_by );
+
+    tree_copy_subtree_into_right( new_tree, mul_left, diff_get_child(src_tree, node_to_diff, RIGHT) );
+
+    //right mul
+    tree_copy_subtree_into_left( new_tree, mul_right, diff_get_child(src_tree, node_to_diff, LEFT) );
+
+    diff_node(  src_tree,
+                diff_get_child(src_tree, node_to_diff, RIGHT),
+                new_tree,
+                mul_right,
+                RIGHT,
+                diff_by );
+}
+
+void diff_op_div( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
+}
+void diff_op_pow( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
+}
+
+
+
+void diff_op_plus( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
+}
+void diff_op_minus( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
+}
+void diff_op_sqrt( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    assert(src_tree);
+    assert(node_to_diff);
+    assert(new_tree);
+
+
 }
