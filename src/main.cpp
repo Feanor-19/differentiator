@@ -5,11 +5,12 @@
 #include "differentiator_output.h"
 #include "differentiator_dump.h"
 
-// TODO - детерминированный конечный автомат
+
 
 int main()
 {
     FileBuf file_buf = read_file_to_buf( "test.txt" );
+
 
     preprocess_detach_not_alnums( &file_buf );
 
@@ -26,8 +27,6 @@ int main()
         diff_print_status_message(stderr, err);
         return err;
     }
-
-    // buf_free(&file_buf); // ??? because all tokens are now stored in parsed_buf.tokens_buf??
 
     VarsOpsRaw vars_ops_raw = { NULL, 0, NULL, 0, NULL, 0 };
     err = diff_assemble_vars_ops_raw( parsed_file, &vars_ops_raw );
@@ -100,7 +99,7 @@ int main()
     diff_insert_op_bin_at_right(&expr.expr_tree, root, OP_ADD);
     TreeNode *r_of_root = tree_get_right_child(root);
     diff_insert_var_at_left(&expr.expr_tree, r_of_root, 0);
-    diff_insert_const_at_right(&expr.expr_tree, r_of_root, 19);
+    diff_insert_const_at_right(&expr.expr_tree, r_of_root, 0);
 
     diff_print_expr(stdout, &expr);
     printf("\n");
@@ -113,10 +112,20 @@ int main()
 
     Expression diffed_expr = diff_diff(&expr, 0);
 
-    TREE_DUMP(&diffed_expr.expr_tree, 0);
     diff_dump(&diffed_expr);
 
     printf("Diffed expression: ");
+    diff_print_expr(stdout, &diffed_expr);
+    printf("\n");
+
+    diff_fold_constants(&diffed_expr, tree_get_root(&diffed_expr.expr_tree));
+
+    diff_fold_neutrals(&diffed_expr, tree_get_root(&diffed_expr.expr_tree));
+
+    // TREE_DUMP(&diffed_expr.expr_tree, 0);
+    diff_dump(&diffed_expr);
+
+    printf("Simplified expression: ");
     diff_print_expr(stdout, &diffed_expr);
     printf("\n");
     // debug end
@@ -129,3 +138,4 @@ int main()
 
     return 0;
 }
+

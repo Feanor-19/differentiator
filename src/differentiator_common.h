@@ -148,4 +148,5 @@ void diff_insert_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin, C
 
 void expr_node_data_print( FILE* stream, void *data_ptr );
 
+
 #endif /* DIFF_COMMON_H */

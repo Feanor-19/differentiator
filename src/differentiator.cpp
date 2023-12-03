@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "utils.h"
+
 inline double eval_node( Expression *expr_ptr, const double *var_values, TreeNode *node_ptr )
 {
     assert(expr_ptr);
@@ -112,6 +114,210 @@ Expression diff_diff( const Expression *expr_ptr, var_t diff_by )
     }
 
     return new_expr;
+}
+
+// TODO - вопрос про оформление свитчей
+int diff_fold_constants( Expression *expr_ptr, TreeNode *node_ptr )
+{
+    assert(expr_ptr);
+    assert(node_ptr);
+
+    TreeNode *node_left = NULL;
+    TreeNode *node_right = NULL;
+    int changes = 0;
+    switch (diff_get_type(node_ptr))
+    {
+    case OP_UNR:
+        node_left = tree_get_left_child(node_ptr);
+
+        if ( diff_get_type(node_left) == OP_UNR || diff_get_type(node_left) == OP_BIN )
+            changes |= diff_fold_constants(expr_ptr, node_left);
+
+        if ( diff_get_type(node_left) == CONST )
+        {
+            double a = diff_get_const(node_left);
+            double res = op_unr_list[ diff_get_op_unr( node_ptr ) ].op_f(a);
+            diff_write_const(&expr_ptr->expr_tree, node_ptr, res);
+            tree_delete_left_child(&expr_ptr->expr_tree, node_ptr);
+            changes = 1;
+        }
+        break;
+    case OP_BIN:
+        node_left = tree_get_left_child(node_ptr);
+        node_right = tree_get_right_child(node_ptr);
+
+        if ( diff_get_type(node_left) == OP_UNR || diff_get_type(node_left) == OP_BIN )
+            changes |= diff_fold_constants(expr_ptr, node_left);
+
+        if ( diff_get_type(node_right) == OP_UNR || diff_get_type(node_right) == OP_BIN )
+            changes |= diff_fold_constants(expr_ptr, node_right);
+
+        if ( diff_get_type(node_left) == CONST && diff_get_type(node_right) == CONST )
+        {
+            double a = diff_get_const(node_left);
+            double b = diff_get_const(node_right);
+            double res = op_bin_list[ diff_get_op_bin( node_ptr ) ].op_f(a, b);
+            diff_write_const(&expr_ptr->expr_tree, node_ptr, res);
+            tree_delete_left_child(&expr_ptr->expr_tree, node_ptr);
+            tree_delete_right_child(&expr_ptr->expr_tree, node_ptr);
+            changes = 1;
+        }
+        break;
+    case CONST:
+    case VAR:
+        return 0;
+        break;
+    case ERROR:
+    default:
+        assert(0);
+        break;
+    }
+
+    return changes;
+}
+
+inline int fold_neutral_add_sub_zero( Expression *expr_ptr, TreeNode *node_ptr)
+{
+    TreeNode* node_left = tree_get_left_child(node_ptr);
+    TreeNode* node_right = tree_get_right_child(node_ptr);
+
+    if ( diff_get_op_bin( node_ptr ) == OP_ADD || diff_get_op_bin( node_ptr ) == OP_SUB )
+    {
+        if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) ) )
+        {
+            if (!node_ptr->parent)
+                tree_migrate_into_root( &expr_ptr->expr_tree, node_right );
+            else if ( node_ptr->parent->left == node_ptr )
+                tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr->parent, node_right );
+            else if ( node_ptr->parent->right == node_ptr )
+                tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_right );
+            else
+                assert(0);
+            return 1;
+        }
+        else if ( diff_get_type(node_right) == CONST && is_dbl_zero( diff_get_const( node_right ) ) )
+        {
+            if (!node_ptr->parent)
+                tree_migrate_into_root( &expr_ptr->expr_tree, node_left );
+            else if ( node_ptr->parent->left == node_ptr )
+                tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else if ( node_ptr->parent->right == node_ptr )
+                tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else
+                assert(0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+inline int fold_neutrals_mul_one( Expression *expr_ptr, TreeNode *node_ptr )
+{
+    TreeNode* node_left = tree_get_left_child(node_ptr);
+    TreeNode* node_right = tree_get_right_child(node_ptr);
+
+    if ( diff_get_op_bin( node_ptr ) == OP_MUL )
+    {
+        if ( diff_get_type(node_left) == CONST && are_dbls_equal( diff_get_const( node_left ), 1 ) )
+        {
+            if (!node_ptr->parent)
+                tree_migrate_into_root( &expr_ptr->expr_tree, node_right );
+            else if ( node_ptr->parent->left == node_ptr )
+                tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr->parent, node_right );
+            else if ( node_ptr->parent->right == node_ptr )
+                tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_right );
+            else
+                assert(0);
+            return 1;
+        }
+        else if ( diff_get_type(node_right) == CONST && are_dbls_equal( diff_get_const( node_right ), 1 ) )
+        {
+            if (!node_ptr->parent)
+                tree_migrate_into_root( &expr_ptr->expr_tree, node_left );
+            else if ( node_ptr->parent->left == node_ptr )
+                tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else if ( node_ptr->parent->right == node_ptr )
+                tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else
+                assert(0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+inline int fold_neutrals_mul_zero( Expression *expr_ptr, TreeNode *node_ptr )
+{
+    TreeNode* node_left = tree_get_left_child(node_ptr);
+    TreeNode* node_right = tree_get_right_child(node_ptr);
+
+    if ( diff_get_op_bin( node_ptr ) == OP_MUL )
+    {
+        if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) ) )
+        {
+            tree_delete_left_child( &expr_ptr->expr_tree, node_ptr );
+            tree_delete_subtree( &expr_ptr->expr_tree, tree_get_right_child(node_ptr) );
+            diff_write_const( &expr_ptr->expr_tree, node_ptr, 0 );
+            return 1;
+        }
+        else if ( diff_get_type(node_right) == CONST && is_dbl_zero( diff_get_const( node_right ) ) )
+        {
+            tree_delete_right_child( &expr_ptr->expr_tree, node_ptr );
+            tree_delete_subtree( &expr_ptr->expr_tree, tree_get_right_child(node_ptr) );
+            diff_write_const( &expr_ptr->expr_tree, node_ptr, 0 );
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
+{
+    assert(expr_ptr);
+    assert(node_ptr);
+
+    TreeNode *node_left = NULL;
+    TreeNode *node_right = NULL;
+    int changes = 0;
+    int curr_change = 0;
+    switch (diff_get_type(node_ptr))
+    {
+    case OP_UNR:
+        node_left = tree_get_left_child(node_ptr);
+
+        // TODO -
+        break;
+    case OP_BIN:
+        node_left = tree_get_left_child(node_ptr);
+        node_right = tree_get_right_child(node_ptr);
+
+        if ( diff_get_type(node_left) == OP_UNR || diff_get_type(node_left) == OP_BIN )
+            changes |= diff_fold_neutrals(expr_ptr, node_left);
+
+        if ( diff_get_type(node_right) == OP_UNR || diff_get_type(node_right) == OP_BIN )
+            changes |= diff_fold_neutrals(expr_ptr, node_right);
+
+        curr_change = fold_neutral_add_sub_zero( expr_ptr, node_ptr );
+
+        if (!curr_change)
+            curr_change = fold_neutrals_mul_one( expr_ptr, node_ptr);
+
+        if (!curr_change)
+            curr_change = fold_neutrals_mul_zero( expr_ptr, node_ptr );
+
+        changes |= curr_change;
+        break;
+    case CONST:
+    case VAR:
+        return 0;
+        break;
+    case ERROR:
+    default:
+        assert(0);
+        break;
+    }
+
+    return changes;
 }
 
 void diff_expr_dtor( Expression *expr_ptr )
