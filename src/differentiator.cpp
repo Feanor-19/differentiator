@@ -174,12 +174,12 @@ int diff_fold_constants( Expression *expr_ptr, TreeNode *node_ptr )
     return changes;
 }
 
-inline int fold_neutral_add_sub_zero( Expression *expr_ptr, TreeNode *node_ptr)
+inline int fold_neutral_add_zero( Expression *expr_ptr, TreeNode *node_ptr)
 {
     TreeNode* node_left = tree_get_left_child(node_ptr);
     TreeNode* node_right = tree_get_right_child(node_ptr);
 
-    if ( diff_get_op_bin( node_ptr ) == OP_ADD || diff_get_op_bin( node_ptr ) == OP_SUB )
+    if ( diff_get_op_bin( node_ptr ) == OP_ADD )
     {
         if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) ) )
         {
@@ -191,6 +191,35 @@ inline int fold_neutral_add_sub_zero( Expression *expr_ptr, TreeNode *node_ptr)
                 tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_right );
             else
                 assert(0);
+            return 1;
+        }
+        else if ( diff_get_type(node_right) == CONST && is_dbl_zero( diff_get_const( node_right ) ) )
+        {
+            if (!node_ptr->parent)
+                tree_migrate_into_root( &expr_ptr->expr_tree, node_left );
+            else if ( node_ptr->parent->left == node_ptr )
+                tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else if ( node_ptr->parent->right == node_ptr )
+                tree_migrate_into_right( &expr_ptr->expr_tree, node_ptr->parent, node_left );
+            else
+                assert(0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+inline int fold_neutral_sub_zero( Expression *expr_ptr, TreeNode *node_ptr)
+{
+    TreeNode* node_left = tree_get_left_child(node_ptr);
+    TreeNode* node_right = tree_get_right_child(node_ptr);
+
+    if ( diff_get_op_bin( node_ptr ) == OP_SUB )
+    {
+        if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) ) )
+        {
+            diff_write_op_unr( &expr_ptr->expr_tree, node_ptr, OP_MINUS );
+            tree_migrate_into_left( &expr_ptr->expr_tree, node_ptr, node_right );
             return 1;
         }
         else if ( diff_get_type(node_right) == CONST && is_dbl_zero( diff_get_const( node_right ) ) )
@@ -261,7 +290,7 @@ inline int fold_neutrals_mul_zero( Expression *expr_ptr, TreeNode *node_ptr )
         else if ( diff_get_type(node_right) == CONST && is_dbl_zero( diff_get_const( node_right ) ) )
         {
             tree_delete_right_child( &expr_ptr->expr_tree, node_ptr );
-            tree_delete_subtree( &expr_ptr->expr_tree, tree_get_right_child(node_ptr) );
+            tree_delete_subtree( &expr_ptr->expr_tree, tree_get_left_child(node_ptr) );
             diff_write_const( &expr_ptr->expr_tree, node_ptr, 0 );
             return 1;
         }
@@ -290,7 +319,10 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
         if ( diff_get_type(node_right) == OP_UNR || diff_get_type(node_right) == OP_BIN )
             changes |= diff_fold_neutrals(expr_ptr, node_right);
 
-        curr_change = fold_neutral_add_sub_zero( expr_ptr, node_ptr );
+        curr_change = fold_neutral_add_zero( expr_ptr, node_ptr );
+
+        if (!curr_change)
+            curr_change = fold_neutral_sub_zero( expr_ptr, node_ptr );
 
         if (!curr_change)
             curr_change = fold_neutrals_mul_one( expr_ptr, node_ptr);
