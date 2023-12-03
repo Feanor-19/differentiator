@@ -93,16 +93,12 @@ Expression diff_diff( const Expression *expr_ptr, var_t diff_by )
     Tree new_tree = {};
     tree_ctor(&new_tree, sizeof(ExprNodeData), NULL, expr_node_data_print);
 
-    // упрощение дерева
-
     diff_node(  &expr_ptr->expr_tree,
                 tree_get_root(&expr_ptr->expr_tree),
                 &new_tree,
                 NULL,
                 ROOT,
                 diff_by);
-
-    // упрощение дерева
 
     Expression new_expr = {};
     new_expr.expr_tree = new_tree;
@@ -112,6 +108,8 @@ Expression diff_diff( const Expression *expr_ptr, var_t diff_by )
     {
         new_expr.vars_names[ind] = strdup( expr_ptr->vars_names[ind] );
     }
+
+    diff_simplify( &new_expr );
 
     return new_expr;
 }
@@ -282,11 +280,6 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
     int curr_change = 0;
     switch (diff_get_type(node_ptr))
     {
-    case OP_UNR:
-        node_left = tree_get_left_child(node_ptr);
-
-        // TODO -
-        break;
     case OP_BIN:
         node_left = tree_get_left_child(node_ptr);
         node_right = tree_get_right_child(node_ptr);
@@ -307,6 +300,7 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
 
         changes |= curr_change;
         break;
+    case OP_UNR:
     case CONST:
     case VAR:
         return 0;
@@ -318,6 +312,19 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
     }
 
     return changes;
+}
+
+void diff_simplify( Expression *expr_ptr )
+{
+    assert(expr_ptr);
+
+    int changes = 0;
+    do
+    {
+        changes = 0;
+        changes |= diff_fold_constants( expr_ptr, tree_get_root( &expr_ptr->expr_tree ) );
+        changes |= diff_fold_neutrals( expr_ptr, tree_get_root( &expr_ptr->expr_tree ) );
+    } while (changes);
 }
 
 void diff_expr_dtor( Expression *expr_ptr )

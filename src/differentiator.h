@@ -25,6 +25,8 @@ int diff_fold_constants( Expression *expr_ptr, TreeNode *node_ptr );
 //! @param [in] node_ptr Node the specified subtree starts with.
 int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr );
 
+void diff_simplify( Expression *expr_ptr );
+
 void diff_expr_dtor( Expression *expr_ptr );
 
 #endif /* DIFF_H */

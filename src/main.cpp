@@ -117,17 +117,6 @@ int main()
     printf("Diffed expression: ");
     diff_print_expr(stdout, &diffed_expr);
     printf("\n");
-
-    diff_fold_constants(&diffed_expr, tree_get_root(&diffed_expr.expr_tree));
-
-    diff_fold_neutrals(&diffed_expr, tree_get_root(&diffed_expr.expr_tree));
-
-    // TREE_DUMP(&diffed_expr.expr_tree, 0);
-    diff_dump(&diffed_expr);
-
-    printf("Simplified expression: ");
-    diff_print_expr(stdout, &diffed_expr);
-    printf("\n");
     // debug end
 
 
