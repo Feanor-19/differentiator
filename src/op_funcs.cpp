@@ -153,6 +153,7 @@ void diff_op_div( const Tree *src_tree, const TreeNode *node_to_diff,
     diff_insert_const( new_tree, node_pow, 2, RIGHT );
 
 }
+
 void diff_op_pow( const Tree *src_tree, const TreeNode *node_to_diff,
                   Tree *new_tree, TreeNode *parent_node_ptr,
                   Child child, var_t diff_by )

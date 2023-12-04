@@ -93,20 +93,20 @@ int main()
     // ...some work with expression...
 
     // debug
-    diff_insert_op_unr_as_root(&expr.expr_tree, OP_SQRT);
+    diff_insert_op_unr_as_root(&expr.expr_tree, OP_MINUS);
     TreeNode *root = tree_get_root(&expr.expr_tree);
-    diff_insert_var_at_left(&expr.expr_tree, root, 0);
+    diff_insert_op_bin_at_left(&expr.expr_tree, root, OP_MUL);
     // diff_insert_var_at_right(&expr.expr_tree, root, 0);
-    // TreeNode *l_of_root = tree_get_left_child(root);
-    // diff_insert_var_at_left(&expr.expr_tree, l_of_root, 0);
-    // diff_insert_const_at_right(&expr.expr_tree, l_of_root, 19);
+    TreeNode *l_of_root = tree_get_left_child(root);
+    diff_insert_var_at_left(&expr.expr_tree, l_of_root, 0);
+    diff_insert_var_at_right(&expr.expr_tree, l_of_root, 0);
 
     diff_print_expr(stdout, &expr);
     printf("\n");
 
     diff_dump(&expr);
 
-    double arr[] = {4, 4, 0};
+    double arr[] = {2, 4, 0};
     double x = diff_evaluate( &expr, arr );
     fprintf(stdout, "Result: <%g>\n", x);
 
@@ -117,6 +117,12 @@ int main()
     printf("Diffed expression: ");
     diff_print_expr(stdout, &diffed_expr);
     printf("\n");
+
+    int is_diffed_expr_const = !is_subtree_var( &diffed_expr,
+                                                tree_get_root( &diffed_expr.expr_tree ),
+                                                0);
+    printf( "Is diffed expression a const (concerning var 0): %s.\n",
+            ( is_diffed_expr_const ? "yes" : "no" ) );
 
     x = diff_evaluate( &diffed_expr, arr );
     fprintf(stdout, "Result in diffed expression: <%g>\n", x);
