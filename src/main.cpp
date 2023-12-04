@@ -93,20 +93,20 @@ int main()
     // ...some work with expression...
 
     // debug
-    diff_insert_op_bin_as_root(&expr.expr_tree, OP_DIV);
+    diff_insert_op_unr_as_root(&expr.expr_tree, OP_SQRT);
     TreeNode *root = tree_get_root(&expr.expr_tree);
-    diff_insert_const_at_left(&expr.expr_tree, root, 3);
-    diff_insert_var_at_right(&expr.expr_tree, root, 0);
-    // TreeNode *r_of_root = tree_get_right_child(root);
-    // diff_insert_var_at_left(&expr.expr_tree, r_of_root, 0);
-    // diff_insert_const_at_right(&expr.expr_tree, r_of_root, 19);
+    diff_insert_var_at_left(&expr.expr_tree, root, 0);
+    // diff_insert_var_at_right(&expr.expr_tree, root, 0);
+    // TreeNode *l_of_root = tree_get_left_child(root);
+    // diff_insert_var_at_left(&expr.expr_tree, l_of_root, 0);
+    // diff_insert_const_at_right(&expr.expr_tree, l_of_root, 19);
 
     diff_print_expr(stdout, &expr);
     printf("\n");
 
     diff_dump(&expr);
 
-    double arr[] = {2, 4, 0};
+    double arr[] = {4, 4, 0};
     double x = diff_evaluate( &expr, arr );
     fprintf(stdout, "Result: <%g>\n", x);
 

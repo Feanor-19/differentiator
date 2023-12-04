@@ -48,8 +48,12 @@ double op_unr_sqrt(double a)
 
 
 
-#define _INSERT_AND_GET( node_where, op, as_which_child )      \
+#define _INSERT_OP_BIN_AND_GET( node_where, op, as_which_child )      \
     ( diff_insert_op_bin( new_tree, node_where, op, as_which_child ),   \
+     diff_get_child(new_tree, node_where, as_which_child))
+
+#define _INSERT_OP_UNR_AND_GET( node_where, op, as_which_child )      \
+    ( diff_insert_op_unr( new_tree, node_where, op, as_which_child ),   \
      diff_get_child(new_tree, node_where, as_which_child))
 
 #define _L diff_get_child(src_tree, node_to_diff, LEFT)
@@ -75,7 +79,7 @@ void diff_op_add( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
-    TreeNode *node = _INSERT_AND_GET( parent_node_ptr, OP_ADD, child );
+    TreeNode *node = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_ADD, child );
 
     _INSERT_DIFFED( _L, node, LEFT );
 
@@ -89,7 +93,7 @@ void diff_op_sub( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
-    TreeNode *node = _INSERT_AND_GET( parent_node_ptr, OP_SUB, child );
+    TreeNode *node = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_SUB, child );
 
     _INSERT_DIFFED( _L, node, LEFT );
 
@@ -103,11 +107,11 @@ void diff_op_mul( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
-    TreeNode *node_add = _INSERT_AND_GET( parent_node_ptr, OP_ADD, child );
+    TreeNode *node_add = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_ADD, child );
 
-    TreeNode *mul_left = _INSERT_AND_GET( node_add, OP_MUL, LEFT );
+    TreeNode *mul_left = _INSERT_OP_BIN_AND_GET( node_add, OP_MUL, LEFT );
 
-    TreeNode *mul_right = _INSERT_AND_GET( node_add, OP_MUL, RIGHT );
+    TreeNode *mul_right = _INSERT_OP_BIN_AND_GET( node_add, OP_MUL, RIGHT );
 
     _INSERT_DIFFED( _L, mul_left, LEFT );
 
@@ -126,15 +130,15 @@ void diff_op_div( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
-    TreeNode *node_div = _INSERT_AND_GET( parent_node_ptr, OP_DIV, child );
+    TreeNode *node_div = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_DIV, child );
 
-    TreeNode *node_sub = _INSERT_AND_GET( node_div, OP_SUB, LEFT );
+    TreeNode *node_sub = _INSERT_OP_BIN_AND_GET( node_div, OP_SUB, LEFT );
 
-    TreeNode *node_mul_left = _INSERT_AND_GET( node_sub, OP_MUL, LEFT );
+    TreeNode *node_mul_left = _INSERT_OP_BIN_AND_GET( node_sub, OP_MUL, LEFT );
 
-    TreeNode *node_mul_right = _INSERT_AND_GET( node_sub, OP_MUL, RIGHT );
+    TreeNode *node_mul_right = _INSERT_OP_BIN_AND_GET( node_sub, OP_MUL, RIGHT );
 
-    TreeNode *node_pow = _INSERT_AND_GET( node_div, OP_POW, RIGHT );
+    TreeNode *node_pow = _INSERT_OP_BIN_AND_GET( node_div, OP_POW, RIGHT );
 
     _INSERT_DIFFED( _L, node_mul_left, LEFT );
 
@@ -170,7 +174,9 @@ void diff_op_plus( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
+    TreeNode *node_plus = _INSERT_OP_UNR_AND_GET(parent_node_ptr, OP_PLUS, child);
 
+    _INSERT_DIFFED( _L, node_plus, LEFT );
 }
 void diff_op_minus( const Tree *src_tree, const TreeNode *node_to_diff,
                   Tree *new_tree, TreeNode *parent_node_ptr,
@@ -180,7 +186,9 @@ void diff_op_minus( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
+    TreeNode *node_minus = _INSERT_OP_UNR_AND_GET(parent_node_ptr, OP_MINUS, child);
 
+    _INSERT_DIFFED( _L, node_minus, LEFT );
 }
 void diff_op_sqrt( const Tree *src_tree, const TreeNode *node_to_diff,
                   Tree *new_tree, TreeNode *parent_node_ptr,
@@ -190,5 +198,15 @@ void diff_op_sqrt( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
+    TreeNode *node_div = _INSERT_OP_BIN_AND_GET(parent_node_ptr, OP_DIV, child);
 
+    _INSERT_DIFFED( _L, node_div, LEFT );
+
+    TreeNode *node_mul = _INSERT_OP_BIN_AND_GET( node_div, OP_MUL, RIGHT );
+
+    diff_insert_const(new_tree, node_mul, 2, LEFT);
+
+    TreeNode *node_sqrt = _INSERT_OP_UNR_AND_GET(node_mul, OP_SQRT, RIGHT);
+
+    _INSERT_COPY(_L, node_sqrt, LEFT);
 }

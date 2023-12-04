@@ -333,6 +333,11 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
         changes |= curr_change;
         break;
     case OP_UNR:
+        node_left = tree_get_left_child(node_ptr);
+
+        if ( diff_get_type(node_left) == OP_UNR || diff_get_type(node_left) == OP_BIN )
+            changes |= diff_fold_neutrals(expr_ptr, node_left);
+        break;
     case CONST:
     case VAR:
         return 0;
