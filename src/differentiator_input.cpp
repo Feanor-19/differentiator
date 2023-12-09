@@ -3,186 +3,138 @@
 #include <assert.h>
 #include <ctype.h>
 
-void preprocess_detach_not_alnums(FileBuf *file_buf_ptr)
+
+//! @note DO REALLOC_WRP BEFORE USING!
+inline void token_put_num( Token *tokens, size_t tokens_ind, double num )
 {
-    assert(file_buf_ptr);
-    assert(file_buf_ptr->buf);
+    assert(tokens);
+    tokens[tokens_ind].token_type = TKN_TYPE_NUM;
+    tokens[tokens_ind].num = num;
+}
 
-    char *new_file_buf = (char*) calloc( file_buf_ptr->buf_size * 3, sizeof(char) );
+//! @note DO REALLOC_WRP BEFORE USING!
+inline void token_put_var( Token *tokens, size_t tokens_ind, var_t var )
+{
+    assert(tokens);
+    tokens[tokens_ind].token_type = TKN_TYPE_VAR;
+    tokens[tokens_ind].var = var;
+}
 
-    size_t buf_ind = 0;
-    size_t new_buf_ind = 0;
-    while (buf_ind < file_buf_ptr->buf_size)
+//! @note DO REALLOC_WRP BEFORE USING!
+inline void token_put_op_cmn( Token *tokens, size_t tokens_ind, TokenOpCmnName tkn_cmn_name )
+{
+    assert(tokens);
+    tokens[tokens_ind].token_type = TKN_TYPE_OP;
+    tokens[tokens_ind].token_op.tkn_op_type = TKN_OP_TYPE_CMN;
+    tokens[tokens_ind].token_op.op_cmn = tkn_cmn_name;
+}
+
+//! @note DO REALLOC_WRP BEFORE USING!
+inline void token_put_op_unr( Token *tokens, size_t tokens_ind, op_unr_t tkn_unr )
+{
+    assert(tokens);
+    tokens[tokens_ind].token_type = TKN_TYPE_OP;
+    tokens[tokens_ind].token_op.tkn_op_type = TKN_OP_TYPE_UNR;
+    tokens[tokens_ind].token_op.op_unr = tkn_unr;
+}
+
+//! @note DO REALLOC_WRP BEFORE USING!
+inline void token_put_op_bin( Token *tokens, size_t tokens_ind, op_bin_t tkn_bin )
+{
+    assert(tokens);
+    tokens[tokens_ind].token_type = TKN_TYPE_OP;
+    tokens[tokens_ind].token_op.tkn_op_type = TKN_OP_TYPE_BIN;
+    tokens[tokens_ind].token_op.op_bin = tkn_bin;
+}
+
+DiffStatus parse_file_buf( FileStream file, TknsAndVars *ret )
+{
+    assert(file.str);
+    assert(ret);
+
+    size_t tokens_cap = TOKENS_DEFAULT_LEN;
+    Token *tokens = (Token *) calloc( tokens_cap, sizeof(Token) );
+    size_t tokens_ind = 0;
+
+    size_t vars_names_cap = VARS_DEFAULT_NUMBER;
+    char **vars_names = (char**) calloc( vars_names_cap, sizeof(char*) );
+    size_t vars_names_ind = 0;
+
+    op_unr_t op_unr = 0;
+    op_bin_t op_bin = 0;
+
+    while( (size_t) (file.ptr - file.str) < file.size + 1 )
     {
-        if ( !isalnum( file_buf_ptr->buf[buf_ind] ) )
+        if ( isspace(*file.ptr) || *file.ptr == '\n' )
         {
-            new_file_buf[new_buf_ind++] = ' ';
-            new_file_buf[new_buf_ind++] = file_buf_ptr->buf[buf_ind];
-            new_file_buf[new_buf_ind++] = ' ';
+            file.ptr++;
+            continue;
+        }
+
+        if ( *file.ptr == '(' || *file.ptr == ')' )
+        {
+            REALLOC_ARR_WRP(tokens, Token);
+            if ( *file.ptr == '(' )
+                token_put_op_cmn( tokens, tokens_ind, TKN_OP_OPN_BRACKET );
+            else
+                token_put_op_cmn( tokens, tokens_ind, TKN_OP_CLS_BRACKET );
+            tokens_ind++;
+            file.ptr++;
+        }
+        else if ( *file.ptr == '\0')
+        {
+            REALLOC_ARR_WRP(tokens, Token);
+            token_put_op_cmn( tokens, tokens_ind, TKN_OP_END );
+            tokens_ind++;
+            file.ptr++;
+        }
+        else if ( isdigit( *file.ptr ) )
+        {
+            double num = NAN;
+            int read_chars = 0;
+            int is_num_read = sscanf(file.ptr, "%lf%n", &num, &read_chars);
+            if (!is_num_read)
+            {
+                // TODO - ОШИБКА!
+            }
+
+            file.ptr += read_chars;
+
+            REALLOC_ARR_WRP(tokens, Token);
+            token_put_num( tokens, tokens_ind, num );
+            tokens_ind++;
+        }
+        else if ( (op_unr = check_is_op_unr(&file) ) != 0 )
+        {
+            REALLOC_ARR_WRP(tokens, Token);
+            token_put_op_unr( tokens, tokens_ind, op_unr );
+            tokens_ind++;
+        }
+        else if ( (op_bin = check_is_op_bin(&file) ) != 0 )
+        {
+            REALLOC_ARR_WRP(tokens, Token);
+            token_put_op_bin( tokens, tokens_ind, op_bin );
+            tokens_ind++;
         }
         else
         {
-            new_file_buf[new_buf_ind++] = file_buf_ptr->buf[buf_ind];
-        }
-        buf_ind++;
-    }
-
-    free(file_buf_ptr->buf);
-
-    file_buf_ptr->buf = new_file_buf;
-    file_buf_ptr->buf_size = new_buf_ind;
-}
-
-inline void write_char_to_token_buf( char **tokens_buf_ptr,
-                                     size_t *tokens_buf_cap,
-                                     size_t *tokens_buf_ind,
-                                     char c )
-{
-    assert(*tokens_buf_ptr);
-    assert(tokens_buf_cap);
-    assert(tokens_buf_ind);
-
-    realloc_arr_if_needed((void**) tokens_buf_ptr, tokens_buf_cap, *tokens_buf_ind, sizeof(char));
-
-    (*tokens_buf_ptr)[(*tokens_buf_ind)++] = c;
-}
-
-
-void print_dfa_error( char *file_buf, size_t err_ind)
-{
-    assert(file_buf);
-    // печатает часть file_buf ДО err_ind (символов 20, но не вылезая за самое начало!!)
-    // TODO -
-    assert(err_ind);
-
-}
-
-char *my_strtok(char **tokens_buf_ptr,
-                size_t *tokens_buf_cap,
-                size_t *tokens_buf_ind,
-                DiffStatus *err,
-                char *file_buf)
-{
-    assert(tokens_buf_ptr);
-    assert(tokens_buf_cap);
-    assert(tokens_buf_ind);
-
-    *err = DIFF_STATUS_OK;
-    // static char *file_buf_start = NULL;
-    static char *file_buf_ptr   = NULL;
-    if (file_buf)
-    {
-        // first run
-        file_buf_ptr    = file_buf;
-        // file_buf_start  = file_buf;
-    }
-
-    DFAStates state = DFA_START;
-    size_t curr_token_len = 0;
-    while (1)
-    {
-        switch (state)
-        {
-        case DFA_START:
-            if ( *file_buf_ptr == ' ' || *file_buf_ptr == '\n' )
+            int is_new = 0;
+            var_t var = get_var_id( &file, vars_names, vars_names_ind, &is_new );
+            if (is_new)
             {
-                file_buf_ptr++;
+                vars_names_ind++;
+                REALLOC_ARR_WRP(vars_names, char*);
             }
-            else if ( *file_buf_ptr == '\0' )
-            {
-                return NULL;
-            }
-            else
-            {
-                state = DFA_WORD;
-                write_char_to_token_buf( tokens_buf_ptr, tokens_buf_cap, tokens_buf_ind, *file_buf_ptr );
-                curr_token_len++;
-                file_buf_ptr++;
-            }
-            break;
-        case DFA_WORD:
-            if ( *file_buf_ptr == ' ' || *file_buf_ptr == '\0' || *file_buf_ptr == '\n' )
-            {
-                write_char_to_token_buf( tokens_buf_ptr, tokens_buf_cap, tokens_buf_ind, '\0');
-                return *tokens_buf_ptr + *tokens_buf_ind - curr_token_len - 1;
-            }
-            else
-            {
-                write_char_to_token_buf( tokens_buf_ptr, tokens_buf_cap, tokens_buf_ind, *file_buf_ptr );
-                curr_token_len++;
-                file_buf_ptr++;
-            }
-            break;
-        default:
-            assert(0 && "Unknown DKA state!");
-            break;
+
+            REALLOC_ARR_WRP(tokens, Token);
+            token_put_var( tokens, tokens_ind, var );
+            tokens_ind++;
         }
     }
 
-    assert(0);
-    return NULL;
-}
 
-DiffStatus parse_file_buf( FileBuf file_buf, ParsedFileBuf *ret )
-{
-    /*
-    assert(file_buf.buf);
-    assert(ret);
-
-    size_t tokens_buf_cap = file_buf.buf_size - 5;
-    char *tokens_buf = (char *) calloc( tokens_buf_cap, sizeof(char) );
-    if (!tokens_buf)
-        return DIFF_STATUS_ERROR_MEM_ALLOC;
-    size_t tokens_buf_ind = 0;
-
-    size_t tokens_cap = TOKENS_DEFAULT_LEN;
-    char **tokens = (char **) calloc( tokens_cap, sizeof(char*) );
-    if (!tokens)
-    {
-        free(tokens_buf);
-        return DIFF_STATUS_ERROR_MEM_ALLOC;
-    }
-    size_t tokens_ind = 0;
-
-    DiffStatus err = DIFF_STATUS_OK;
-    char *curr_token = my_strtok( &tokens_buf, &tokens_buf_cap, &tokens_buf_ind, &err, file_buf.buf );
-    while (curr_token != NULL)
-    {
-        tokens[tokens_ind++] = curr_token;
-        REALLOC_ARR_WRP(tokens, char*);
-
-        curr_token = my_strtok(&tokens_buf, &tokens_buf_cap, &tokens_buf_ind, &err);
-    }
-
-    if (err)
-        return DIFF_STATUS_ERROR_DFA;
-
-    *ret = {tokens_buf, tokens, tokens_ind};
+    *ret = {tokens, tokens_ind, vars_names, vars_names_ind};
     return DIFF_STATUS_OK;
-    */
-
-
-    assert(file_buf.buf);
-    assert(ret);
-
-    const char delim[] = {' ', '\n', '\0'};
-
-    size_t tokens_cap = TOKENS_DEFAULT_LEN;
-    char **tokens = (char **) calloc( tokens_cap, sizeof(char*) );
-    size_t tokens_ind = 0;
-
-    char *curr_token = strtok( file_buf.buf, delim );
-    while (curr_token != NULL)
-    {
-        tokens[tokens_ind++] = curr_token;
-        REALLOC_ARR_WRP(tokens, char*);
-
-        curr_token = strtok( NULL, delim );
-    }
-
-    *ret = {tokens, tokens_ind};
-    return DIFF_STATUS_OK;
-
 }
 
 void realloc_arr_if_needed( void **arr_ptr, size_t *arr_cap_ptr, size_t arr_ind, size_t elem_size )
@@ -201,6 +153,7 @@ void realloc_arr_if_needed( void **arr_ptr, size_t *arr_cap_ptr, size_t arr_ind,
     }
 }
 
+/*
 int check_does_token_contain_only_letters( const char *token )
 {
     assert(token);
@@ -213,136 +166,133 @@ int check_does_token_contain_only_letters( const char *token )
 
     return 1;
 }
+*/
 
-op_unr_t check_is_token_op_unr( const char *token )
+inline int is_char_allowed_in_identifiers( char c )
 {
-    assert(token);
+    return (isalnum(c) || c == '_');
+}
+
+inline size_t find_identifier_end( const char* str )
+{
+    assert(str);
+    const char *start = str;
+    while ( is_char_allowed_in_identifiers(*str) && (*str != '\0') )
+        str++;
+
+    return str - start;
+}
+
+op_unr_t check_is_op_unr( FileStream *file )
+{
+    assert(file);
+
+    size_t off = 0;
+    if ( isalnum( *file->ptr ) )
+        off = find_identifier_end( file->ptr );
+    else
+        off = 1;
+    char tmp = file->ptr[off];
+    file->ptr[off] = '\0';
 
     for (op_unr_t op_id = 1; op_id < size_of_arr(op_unr_list); op_id++ )
     {
-        if ( strcmp( token, op_unr_list[op_id].name ) == 0 )
+        if ( strcmp( file->ptr, op_unr_list[op_id].name ) == 0 )
         {
+            file->ptr[off] = tmp;
+            if ( op_id == (op_unr_t) OP_MINUS && !isalnum(tmp) )
+                return 0; // this is not unary minus! this is a binary one!
+            if ( op_id == (op_unr_t) OP_PLUS  && !isalnum(tmp) )
+                return 0; // this is not unary plus!  this is a binary one!
+
+            file->ptr += off;
             return op_id;
         }
     }
+
+    file->ptr[off] = tmp;
     return 0;
 }
 
-op_bin_t check_is_token_op_bin( const char *token )
+op_bin_t check_is_op_bin( FileStream *file )
 {
-    assert(token);
+    assert(file);
+
+    size_t off = 0;
+    if ( isalnum( *file->ptr ) )
+        off = find_identifier_end( file->ptr );
+    else
+        off = 1;
+    char tmp = file->ptr[off];
+    file->ptr[off] = '\0';
 
     for (op_bin_t op_id = 1; op_id < size_of_arr(op_bin_list); op_id++ )
     {
-        if ( strcmp( token, op_bin_list[op_id].name ) == 0 )
+        if ( strcmp( file->ptr, op_bin_list[op_id].name ) == 0 )
         {
+            file->ptr[off] = tmp;
+            file->ptr += off;
             return op_id;
         }
     }
+
+    file->ptr[off] = tmp;
     return 0;
 }
 
 //! @brief Receieves token, which DEFINITELY contains a variable,
-//! and array of structs VarForParsing. Determines whether this variable was met earlier or not;
+//! and array of variable's names vars_names. Determines whether this variable was met earlier or not;
 //! if yes, returns its sequantial number (id), if no, returns new sequential number and
 //! sets '*is_new' to 1.
-inline var_t get_var_id(    ParsedFileBuf parsed_buf,
-                            const char* token,
-                            VarForParsing *vars,
-                            size_t vars_len,
-                            int *is_new )
+//! @note DO REALLOC OF VARS_NAMES AFTER THIS!
+var_t get_var_id( FileStream *file,
+                  char **vars_names,
+                  size_t vars_names_ind,
+                  int *is_new)
 {
-    var_t max_var_id = 0;
-    for (var_t ind = 0; ind < vars_len; ind++)
-    {
-        if ( strcmp( parsed_buf.tokens[ vars[ind].token_ind ], token ) == 0 )
-            return vars[ind].var_id;
+    assert(file);
+    assert(vars_names);
+    assert(is_new);
 
-        if ( vars[ind].var_id > max_var_id )
-            max_var_id = vars[ind].var_id;
+    size_t off = find_identifier_end( file->ptr );
+    char tmp = file->ptr[off];
+    file->ptr[off] = '\0';
+
+    for (var_t ind = 0; ind < vars_names_ind; ind++)
+    {
+        if ( strcmp( vars_names[ind], file->ptr ) == 0 )
+        {
+            file->ptr[off] = tmp;
+            file->ptr += off;
+            return ind;
+        }
     }
+
+    // adding new var name
+    vars_names[vars_names_ind] = strdup( file->ptr );
     *is_new = 1;
-    if (vars_len == 0)
-        return 0;
 
-    return max_var_id + 1;
+    file->ptr[off] = tmp;
+    file->ptr += off;
+    return (var_t) vars_names_ind;
 }
 
-DiffStatus diff_assemble_vars_ops_raw(ParsedFileBuf parsed_buf, VarsOpsRaw *ret)
+void diff_get_addive( TknsAndVars *parsed_tokens, Tree *tree, TreeNode *prnt_node, Child child )
 {
-    assert(parsed_buf.tokens);
-    assert(ret);
 
-    size_t vars_cap = VARS_DEFAULT_NUMBER;
-    VarForParsing *vars = (VarForParsing*) calloc( vars_cap, sizeof(VarForParsing) );
-    size_t vars_ind = 0;
-
-    size_t ops_unr_cap = OPS_UNR_DEFAULT_NUMBER;
-    OpUnrForParsing *ops_unr = (OpUnrForParsing*) calloc( ops_unr_cap, sizeof(OpUnrForParsing) );
-    size_t ops_unr_ind = 0;
-
-    size_t ops_bin_cap = OPS_BIN_DEFAULT_NUMBER;
-    OpBinForParsing *ops_bin = (OpBinForParsing*) calloc( ops_bin_cap, sizeof(OpBinForParsing) );
-    size_t ops_bin_ind = 0;
-
-    size_t vars_names_cap = VARS_DEFAULT_NUMBER;
-    char **vars_names = (char**) calloc( vars_names_cap, sizeof(char*) );
-    size_t vars_names_ind = 0;
-
-    for (size_t ind = 0; ind < parsed_buf.n_tokens; ind++)
-    {
-        char *token = parsed_buf.tokens[ind];
-        if ( token[0] == '(' || token[0] == ')' )
-            continue;
-
-        op_unr_t op_unr = 0;
-        op_bin_t op_bin = 0;
-        if ( (op_unr = check_is_token_op_unr(token) ) != 0 )
-        {
-            REALLOC_ARR_WRP(ops_unr, OpUnrForParsing);
-            ops_unr[ops_unr_ind].op_unr_id = op_unr;
-            ops_unr[ops_unr_ind].token_ind = ind;
-            ops_unr_ind++;
-        }
-
-        if ( (op_bin = check_is_token_op_bin(token) ) != 0 )
-        {
-            REALLOC_ARR_WRP(ops_bin, OpBinForParsing);
-            ops_bin[ops_bin_ind].op_bin_id = op_bin;
-            ops_bin[ops_bin_ind].token_ind = ind;
-            ops_bin_ind++;
-        }
-
-        if ( op_unr == 0 && op_bin == 0 && check_does_token_contain_only_letters(token) )
-        {
-            REALLOC_ARR_WRP(vars, VarForParsing);
-            int is_new = 0;
-            vars[vars_ind].var_id       = get_var_id( parsed_buf, token, vars, vars_ind, &is_new );
-            vars[vars_ind].token_ind    = ind;
-            vars_ind++;
-
-            if (is_new)
-            {
-                REALLOC_ARR_WRP(vars_names, char*);
-                vars_names[vars_names_ind++] = token;
-            }
-        }
-    }
-
-    *ret = { vars, vars_ind, ops_unr, ops_unr_ind, ops_bin, ops_bin_ind, vars_names, vars_names_ind };
-    return DIFF_STATUS_OK;
 }
 
-DiffStatus diff_assemble_expr_tree( ParsedFileBuf *parsed_buf, const VarsOpsRaw *raw_ptr, Tree *expr_tree )
+DiffStatus diff_assemble_expr_tree( TknsAndVars *parsed_tokens, Tree *expr_tree )
 {
-    assert(parsed_buf);
-    assert(parsed_buf->tokens);
-    assert(raw_ptr);
+    assert(parsed_tokens);
+    assert(parsed_tokens->tokens);
     assert(expr_tree);
 
     tree_ctor(expr_tree, sizeof(ExprNodeData), NULL, expr_node_data_print);
 
-    // ...
+    diff_get_addive( parsed_tokens, expr_tree, NULL, ROOT );
+
+
 
     return DIFF_STATUS_OK;
 }
@@ -367,27 +317,18 @@ Expression diff_assemble_expression(    Tree *expr_tree,
     return expr;
 }
 
-void parsed_file_buf_dtor( ParsedFileBuf *parsed_buf_ptr )
+void parsed_tokens_and_vars_dtor( TknsAndVars *parsed_tokens )
 {
-    if ( parsed_buf_ptr )
+    if ( parsed_tokens )
     {
-        FREE(parsed_buf_ptr->tokens);
-        //FREE(parsed_buf_ptr->tokens_buf);
-        parsed_buf_ptr->n_tokens = 0;
-    }
-}
+        FREE(parsed_tokens->tokens);
+        parsed_tokens->n_tokens = 0;
 
-void vars_ops_raw_dtor( VarsOpsRaw *vars_ops_raw_ptr )
-{
-    if ( vars_ops_raw_ptr )
-    {
-        FREE(vars_ops_raw_ptr->ops_bin_for_parsing);
-        FREE(vars_ops_raw_ptr->ops_unr_for_parsing);
-        FREE(vars_ops_raw_ptr->vars_for_parsing);
-        FREE(vars_ops_raw_ptr->vars_names);
-        vars_ops_raw_ptr->n_ops_bin     = 0;
-        vars_ops_raw_ptr->n_ops_unr     = 0;
-        vars_ops_raw_ptr->n_vars        = 0;
-        vars_ops_raw_ptr->n_var_names   = 0;
+        for (size_t ind = 0; ind < parsed_tokens->n_vars; ind++)
+        {
+            FREE(parsed_tokens->vars_names[ind]);
+        }
+        FREE(parsed_tokens->vars_names);
+        parsed_tokens->n_vars = 0;
     }
 }

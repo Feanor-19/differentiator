@@ -15,28 +15,32 @@ const char * const diff_status_messages[] =
 
 
 /*
+    // TODO -
     ПРИМЕЧАНИЕ ОБ ИМЕНАХ ОПЕРАТОРОВ:
     Имя оператора может:
     - ИЛИ состоять из одного символа, не являющегося буквой или цифрой
     - ИЛИ состоять из нескольких букв и/или цифр
     Т.е. имя оператора НЕ МОЖЕТ состоять из нескольких символов,
     не являющихся ни буквами, ни цифрами!
+
+    ПРИМЕЧАНИЕ ОБ УНАРНОМ МИНУСЕ:
+    - минус считается унарным только если он стоит сразу перед цифрой или буквой, без пробелов.
 */
 const OpUnr op_unr_list[] =
 {
-    { "FICTIONAL",  NULL,           0,      NULL},
-    { "+",          op_unr_plus,    1,      diff_op_plus},
-    { "-",          op_unr_minus,   1,      diff_op_minus},
-    { "sqrt",       op_unr_sqrt,    1,      diff_op_sqrt}
+    { "FICTIONAL",  TKN_OP_UNR_OPERATION,   NULL,           NULL},
+    { "+",          TKN_OP_UNR_OPERATION,   op_unr_plus,    diff_op_plus},
+    { "-",          TKN_OP_UNR_OPERATION,   op_unr_minus,   diff_op_minus},
+    { "sqrt",       TKN_OP_UNR_FUNC,        op_unr_sqrt,    diff_op_sqrt}
 };
 const OpBin op_bin_list[] =
 {
-    { "FICTIONAL",  NULL,           0,      NULL},
-    { "+",          op_bin_add,     4,      diff_op_add},
-    { "-",          op_bin_sub,     4,      diff_op_sub},
-    { "*",          op_bin_mul,     3,      diff_op_mul},
-    { "/",          op_bin_div,     3,      diff_op_div},
-    { "^",          op_bin_pow,     2,      diff_op_pow}
+    { "FICTIONAL",  TKN_OP_BIN_GROUP_ADD,   NULL,           NULL},
+    { "+",          TKN_OP_BIN_GROUP_ADD,   op_bin_add,     diff_op_add},
+    { "-",          TKN_OP_BIN_GROUP_ADD,   op_bin_sub,     diff_op_sub},
+    { "*",          TKN_OP_BIN_GROUP_MUL,   op_bin_mul,     diff_op_mul},
+    { "/",          TKN_OP_BIN_GROUP_MUL,   op_bin_div,     diff_op_div},
+    { "^",          TKN_OP_BIN_GROUP_POW,   op_bin_pow,     diff_op_pow}
 };
 
 enum OpsUnr

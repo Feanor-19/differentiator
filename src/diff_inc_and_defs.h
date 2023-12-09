@@ -57,6 +57,18 @@ struct ExprNodeData
     };
 };
 
+enum TokenOpUnrPrior
+{
+    TKN_OP_UNR_OPERATION,
+    TKN_OP_UNR_FUNC,
+};
+
+enum TokenOpBinPrior
+{
+    TKN_OP_BIN_GROUP_ADD,
+    TKN_OP_BIN_GROUP_MUL,
+    TKN_OP_BIN_GROUP_POW,
+};
 
 const size_t OP_NAME_MAX_LEN    = 16;
 const size_t VAR_NAME_MAX_LEN   = 32;
@@ -64,20 +76,11 @@ const size_t WORD_MAX_LEN       = 32;
 static_assert( OP_NAME_MAX_LEN <= WORD_MAX_LEN && VAR_NAME_MAX_LEN <= WORD_MAX_LEN );
 
 
-// TODO -
-/*
-typedef void (*diff_op_t)( const Tree *src_tree,
-                           const TreeNode *diff_node,
-                           Tree *new_tree,
-                           TreeNode *parent_node_ptr,
-                           Child child,
-                           var_t diff_by );
-*/
 struct OpUnr
 {
     char name[OP_NAME_MAX_LEN]  = "";   // Operator's name. SEE NOTE CONCERNING NAMES!
+    TokenOpUnrPrior prior;              // Operator's priority group.
     double (*op_f)(double a)    = NULL; //< Pointer to function, associated with this operator.
-    op_prior_t prior            = 0;    //< the lesser the number is, the higher priority.
     void (*diff_op)( const Tree *src_tree,
                      const TreeNode *diff_node,
                      Tree *new_tree,
@@ -89,8 +92,8 @@ struct OpUnr
 struct OpBin
 {
     char name[OP_NAME_MAX_LEN]          = "";   // Operator's name. SEE NOTE CONCERNING NAMES!
+    TokenOpBinPrior prior;                      // Operator's priority group.
     double (*op_f)(double a, double b)  = NULL; //< Pointer to function, associated with this operator.
-    op_prior_t prior                    = 0;    //< The lesser the number is, the higher priority.
     void (*diff_op)( const Tree *src_tree,
                      const TreeNode *diff_node,
                      Tree *new_tree,
