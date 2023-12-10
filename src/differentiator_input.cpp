@@ -199,9 +199,9 @@ op_unr_t check_is_op_unr( FileStream *file )
         if ( strcmp( file->ptr, op_unr_list[op_id].name ) == 0 )
         {
             file->ptr[off] = tmp;
-            if ( op_id == (op_unr_t) OP_MINUS && isalnum(get_next_significant_char(file->ptr + off)) )
+            if ( op_id == (op_unr_t) OP_MINUS && !isalnum(get_next_significant_char(file->ptr + off)) )
                 return 0; // this is not unary minus! this is a binary one!
-            if ( op_id == (op_unr_t) OP_PLUS  && isalnum(get_next_significant_char(file->ptr + off)) )
+            if ( op_id == (op_unr_t) OP_PLUS  && !isalnum(get_next_significant_char(file->ptr + off)) )
                 return 0; // this is not unary plus!  this is a binary one!
 
             file->ptr += off;
