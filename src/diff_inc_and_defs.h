@@ -57,18 +57,23 @@ struct ExprNodeData
     };
 };
 
-enum TokenOpUnrPrior
-{
-    TKN_OP_UNR_OPERATION,
-    TKN_OP_UNR_FUNC,
-};
-
+/*
+    ПРИМЕЧАНИЕ О ПРИОРИТЕТАХ:
+    - У всех унарных операторов приоритет выше чем у любого бинарного.
+    - Чем больше численное значение приоритета, тем он выше.
+*/
 enum TokenOpBinPrior
 {
-    TKN_OP_BIN_GROUP_ADD,
-    TKN_OP_BIN_GROUP_MUL,
-    TKN_OP_BIN_GROUP_POW,
+    TKN_OP_BIN_GROUP_ADD    = 1,
+    TKN_OP_BIN_GROUP_MUL    = 2,
+    TKN_OP_BIN_GROUP_POW    = 3,
 };
+
+enum TokenOpUnrPrior
+{
+    TKN_OP_UNR_DEFAULT      = 4,
+};
+
 
 const size_t OP_NAME_MAX_LEN    = 16;
 const size_t VAR_NAME_MAX_LEN   = 32;

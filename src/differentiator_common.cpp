@@ -117,6 +117,16 @@ void diff_insert_const( Tree *expr_tree, TreeNode *node_ptr, double cnst, Child 
     }
 }
 
+TreeNode *diff_new_const_node( Tree *expr_tree, double cnst )
+{
+    assert(expr_tree);
+
+    ExprNodeData data = {};
+    data.type = CONST;
+    data.cnst = cnst;
+    return op_new_TreeNode( expr_tree, &data );
+}
+
 var_t diff_get_var( const TreeNode *node_ptr )
 {
     assert(node_ptr);
@@ -186,6 +196,16 @@ void diff_insert_var( Tree *expr_tree, TreeNode *node_ptr, var_t var, Child chil
         assert(0);
         break;
     }
+}
+
+TreeNode *diff_new_var_node( Tree *expr_tree, var_t var )
+{
+    assert(expr_tree);
+
+    ExprNodeData data = {};
+    data.type = VAR;
+    data.var = var;
+    return op_new_TreeNode( expr_tree, &data );
 }
 
 op_unr_t diff_get_op_unr( const TreeNode *node_ptr )
@@ -259,6 +279,16 @@ void diff_insert_op_unr( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr, C
     }
 }
 
+TreeNode *diff_new_op_unr_node( Tree *expr_tree, op_unr_t op_unr )
+{
+    assert(expr_tree);
+
+    ExprNodeData data = {};
+    data.type = OP_UNR;
+    data.op_unr = op_unr;
+    return op_new_TreeNode( expr_tree, &data );
+}
+
 op_bin_t diff_get_op_bin( const TreeNode *node_ptr )
 {
     assert(node_ptr);
@@ -328,6 +358,16 @@ void diff_insert_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin, C
         assert(0);
         break;
     }
+}
+
+TreeNode *diff_new_op_bin_node( Tree *expr_tree, op_bin_t op_bin )
+{
+    assert(expr_tree);
+
+    ExprNodeData data = {};
+    data.type = OP_BIN;
+    data.op_bin = op_bin;
+    return op_new_TreeNode( expr_tree, &data );
 }
 
 void expr_node_data_print( FILE* stream, void *data_ptr )

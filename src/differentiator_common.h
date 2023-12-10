@@ -28,10 +28,10 @@ const char * const diff_status_messages[] =
 */
 const OpUnr op_unr_list[] =
 {
-    { "FICTIONAL",  TKN_OP_UNR_OPERATION,   NULL,           NULL},
-    { "+",          TKN_OP_UNR_OPERATION,   op_unr_plus,    diff_op_plus},
-    { "-",          TKN_OP_UNR_OPERATION,   op_unr_minus,   diff_op_minus},
-    { "sqrt",       TKN_OP_UNR_FUNC,        op_unr_sqrt,    diff_op_sqrt}
+    { "FICTIONAL",  TKN_OP_UNR_DEFAULT,     NULL,           NULL},
+    { "+",          TKN_OP_UNR_DEFAULT,     op_unr_plus,    diff_op_plus},
+    { "-",          TKN_OP_UNR_DEFAULT,     op_unr_minus,   diff_op_minus},
+    { "sqrt",       TKN_OP_UNR_DEFAULT,     op_unr_sqrt,    diff_op_sqrt}
 };
 const OpBin op_bin_list[] =
 {
@@ -89,6 +89,9 @@ void diff_insert_const_at_right( Tree *expr_tree, TreeNode *node_ptr, double cns
 //! @brief Inserts a new node of type 'const' as the specified child of the given node.
 void diff_insert_const( Tree *expr_tree, TreeNode *node_ptr, double cnst, Child child );
 
+//! @brief Creates a new node using 'op_new_TreeNode()' and writes given const into it.
+TreeNode *diff_new_const_node( Tree *expr_tree, double cnst );
+
 
 //! @brief Returns variable, stored in given node.
 var_t diff_get_var( const TreeNode *node_ptr );
@@ -107,6 +110,9 @@ void diff_insert_var_at_right( Tree *expr_tree, TreeNode *node_ptr, var_t var );
 
 //! @brief Inserts a new node of type 'var' as the specified child of the given node.
 void diff_insert_var( Tree *expr_tree, TreeNode *node_ptr, var_t var, Child child );
+
+//! @brief Creates a new node using 'op_new_TreeNode()' and writes given var into it.
+TreeNode *diff_new_var_node( Tree *expr_tree, var_t var );
 
 
 //! @brief Returns unary operator, stored in given node.
@@ -127,6 +133,9 @@ void diff_insert_op_unr_at_right( Tree *expr_tree, TreeNode *node_ptr, op_unr_t 
 //! @brief Inserts a new node of type 'op_unr' as the specified child of the given node.
 void diff_insert_op_unr( Tree *expr_tree, TreeNode *node_ptr, op_unr_t op_unr, Child child );
 
+//! @brief Creates a new node using 'op_new_TreeNode()' and writes given op_unr into it.
+TreeNode *diff_new_op_unr_node( Tree *expr_tree, op_unr_t op_unr );
+
 
 //! @brief Returns binary operator, stored in given node.
 op_bin_t diff_get_op_bin( const TreeNode *node_ptr );
@@ -145,6 +154,11 @@ void diff_insert_op_bin_at_right( Tree *expr_tree, TreeNode *node_ptr, op_bin_t 
 
 //! @brief Inserts a new node of type 'op_bin' as the specified child of the given node.
 void diff_insert_op_bin( Tree *expr_tree, TreeNode *node_ptr, op_bin_t op_bin, Child child );
+
+//! @brief Creates a new node using 'op_new_TreeNode()' and writes given op_bin into it.
+TreeNode *diff_new_op_bin_node( Tree *expr_tree, op_bin_t op_bin );
+
+
 
 #define size_of_arr(arr) (sizeof(arr)/sizeof(*arr))
 

@@ -45,13 +45,14 @@ struct TokenOp
 
 struct Token
 {
-    TokenType token_type;
-    union
+    TokenType token_type;   //< Type of the token.
+    union                   //< Token itself.
     {
         double num;
         var_t var;
         TokenOp token_op;
     };
+    char *tkn_start;   //< Pointer of the first character of the token in FileStream.str
 };
 
 struct TknsAndVars
@@ -67,6 +68,8 @@ struct TknsAndVars
 const size_t REALLOC_DEFAULT_MULTIPLIER = 2;
 const size_t TOKENS_DEFAULT_LEN         = 10;
 const size_t VARS_DEFAULT_NUMBER        = 2;
+FILE * const STREAM_ERROR               = stderr;
+const size_t ERROR_MSG_LEN              = 19;
 
 
 DiffStatus parse_file_buf( FileStream file, TknsAndVars *ret );
@@ -98,7 +101,22 @@ var_t get_var_id( FileStream *file,
                   size_t vars_names_ind,
                   int *is_new);
 
-//TODO - добавить описание после написания ф-ии
+TreeNode *diff_get_num( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_var( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_primal( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_unr( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_powive( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_mulive( TknsAndVars *tkns, Tree *tree );
+
+TreeNode *diff_get_addive( TknsAndVars *tkns, Tree *tree);
+
+DiffStatus diff_build_expr_tree_from_tokens( TknsAndVars *tkns, Tree *expr_tree );
+
 DiffStatus diff_assemble_expr_tree( TknsAndVars *parsed_tokens, Tree *expr_tree );
 
 //! @brief Assembles Expression. MAKES A COPY OF vars_names, because otherwise it would have

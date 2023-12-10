@@ -27,14 +27,14 @@ static DiffStatus print_expr_tree_node( FILE *stream,
         break;
     case OP_BIN:
         prior = op_bin_list[diff_get_op_bin(node_ptr)].prior;
-        if (prev_op_prior < prior)
+        if (prior < prev_op_prior)
             fprintf(stream, "(");
 
         print_expr_tree_node(stream, expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(stream, " %s ", op_bin_list[diff_get_op_bin(node_ptr)].name);
         print_expr_tree_node(stream, expr_ptr, tree_get_right_child(node_ptr), prior);
 
-        if (prev_op_prior < prior)
+        if (prior < prev_op_prior)
             fprintf(stream, ")");
         break;
     case ERROR:
