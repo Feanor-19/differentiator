@@ -39,8 +39,8 @@ int main()
     // end of input
 
     // ...some work with expression...
-    // diff_dump( &expr );
-    printf("Entered expression:");
+    diff_dump( &expr );
+    printf("Entered expression: ");
     diff_print_expr(stdout, &expr);
     printf("\n");
 

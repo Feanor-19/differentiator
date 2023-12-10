@@ -2,6 +2,11 @@
 
 #include <assert.h>
 
+inline int are_parentheses_needed( op_prior_t prior, op_prior_t prev_op_prior )
+{
+    return prior < prev_op_prior;
+}
+
 static DiffStatus print_expr_tree_node( FILE *stream,
                                         const Expression *expr_ptr,
                                         const TreeNode *node_ptr,
@@ -21,20 +26,20 @@ static DiffStatus print_expr_tree_node( FILE *stream,
         break;
     case OP_UNR:
         prior = op_unr_list[diff_get_op_unr(node_ptr)].prior;
-        fprintf(stream, " %s(", op_unr_list[diff_get_op_unr(node_ptr)].name);
+        fprintf(stream, "%s(", op_unr_list[diff_get_op_unr(node_ptr)].name);
         print_expr_tree_node(stream, expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(stream, ")");
         break;
     case OP_BIN:
         prior = op_bin_list[diff_get_op_bin(node_ptr)].prior;
-        if (prior < prev_op_prior)
+        if ( are_parentheses_needed(prior, prev_op_prior) )
             fprintf(stream, "(");
 
         print_expr_tree_node(stream, expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(stream, " %s ", op_bin_list[diff_get_op_bin(node_ptr)].name);
         print_expr_tree_node(stream, expr_ptr, tree_get_right_child(node_ptr), prior);
 
-        if (prior < prev_op_prior)
+        if ( are_parentheses_needed(prior, prev_op_prior) )
             fprintf(stream, ")");
         break;
     case ERROR:

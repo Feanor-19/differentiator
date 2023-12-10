@@ -298,6 +298,27 @@ inline int fold_neutrals_mul_zero( Expression *expr_ptr, TreeNode *node_ptr )
     return 0;
 }
 
+inline int fold_neutral_zero_dived_by_smth( Expression *expr_ptr, TreeNode *node_ptr )
+{
+    TreeNode* node_left = tree_get_left_child(node_ptr);
+    TreeNode* node_right = tree_get_right_child(node_ptr);
+
+    if ( diff_get_op_bin( node_ptr ) == OP_DIV )
+    {
+        // TODO - лучше так или очень разветвленно, но с маленькими условиями??
+        if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) )
+            && ( diff_get_type(node_right) != CONST
+                || (diff_get_type(node_right) == CONST && !is_dbl_zero( diff_get_const( node_right )) ) ) )
+        {
+            tree_delete_left_child( &expr_ptr->expr_tree, node_ptr );
+            tree_delete_subtree( &expr_ptr->expr_tree, tree_get_right_child(node_ptr) );
+            diff_write_const( &expr_ptr->expr_tree, node_ptr, 0 );
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
 {
     assert(expr_ptr);
