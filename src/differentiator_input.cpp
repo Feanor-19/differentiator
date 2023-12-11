@@ -175,11 +175,16 @@ inline size_t find_identifier_end( const char* str )
     return str - start;
 }
 
-inline char get_next_significant_char( const char *str )
+//! @brief Searches for the first previous significant char in string
+//! 'string', starting from 'ptr'. If no significant chars are found, 0 is returned.
+inline char get_prev_significant_char( const char *string, const char *ptr )
 {
-    while ( isspace(*str) )
-        str++;
-    return *str;
+    while ( ptr >= string && isspace(*ptr) )
+        ptr--;
+
+    if (ptr < string)
+        return 0;
+    return *ptr;
 }
 
 op_unr_t check_is_op_unr( FileStream *file )
@@ -199,10 +204,10 @@ op_unr_t check_is_op_unr( FileStream *file )
         if ( strcmp( file->ptr, op_unr_list[op_id].name ) == 0 )
         {
             file->ptr[off] = tmp;
-            if ( op_id == (op_unr_t) OP_MINUS && !isalnum(get_next_significant_char(file->ptr + off)) )
-                return 0; // this is not unary minus! this is a binary one!
-            if ( op_id == (op_unr_t) OP_PLUS  && !isalnum(get_next_significant_char(file->ptr + off)) )
-                return 0; // this is not unary plus!  this is a binary one!
+            char prev_c = get_prev_significant_char(file->str, file->ptr - 1);
+            if ( (op_id == (op_unr_t) OP_MINUS || op_id == (op_unr_t) OP_PLUS)
+                && !( prev_c == 0 || prev_c == '(' ) )
+                return 0; // this is not unary minus/plus! this is a binary one!
 
             file->ptr += off;
             return op_id;
@@ -281,7 +286,7 @@ var_t get_var_id( FileStream *file,
 inline void print_rec_fall_err_msg( Token tkn, const char *expected )
 {
     fprintf(STREAM_ERROR, "Syntax error: expected <%s>, found:\n", expected);
-    for (size_t ind = 0; ind < ERROR_MSG_LEN; ind++)
+    for (size_t ind = 0; ind < ERROR_MSG_LEN && tkn.tkn_start[ind] != '\0'; ind++)
     {
         putc( tkn.tkn_start[ind], STREAM_ERROR );
     }

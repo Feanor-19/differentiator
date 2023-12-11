@@ -4,7 +4,7 @@
 
 inline int are_parentheses_needed( op_prior_t prior, op_prior_t prev_op_prior )
 {
-    return prior < prev_op_prior;
+    return prior <= prev_op_prior;
 }
 
 static DiffStatus print_expr_tree_node( FILE *stream,
