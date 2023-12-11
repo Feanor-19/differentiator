@@ -31,7 +31,9 @@ const OpUnr op_unr_list[] =
     { "FICTIONAL",  TKN_OP_UNR_DEFAULT,     NULL,           NULL},
     { "+",          TKN_OP_UNR_DEFAULT,     op_unr_plus,    diff_op_plus},
     { "-",          TKN_OP_UNR_DEFAULT,     op_unr_minus,   diff_op_minus},
-    { "sqrt",       TKN_OP_UNR_DEFAULT,     op_unr_sqrt,    diff_op_sqrt}
+    { "sqrt",       TKN_OP_UNR_DEFAULT,     op_unr_sqrt,    diff_op_sqrt},
+    { "exp",        TKN_OP_UNR_DEFAULT,     op_unr_exp,     diff_op_exp},
+    { "ln",         TKN_OP_UNR_DEFAULT,     op_unr_ln,      diff_op_ln}
 };
 const OpBin op_bin_list[] =
 {
@@ -48,6 +50,8 @@ enum OpsUnr
     OP_PLUS = 1,
     OP_MINUS,
     OP_SQRT,
+    OP_EXP,
+    OP_LN,
 };
 
 enum OpsBin

@@ -454,8 +454,8 @@ TreeNode *diff_get_powive( TknsAndVars *tkns, Tree *tree )
         }
 
         TreeNode *node_new_op = diff_new_op_bin_node(tree, op);
-        tree_hang_loose_node_at_left( tree, node_second, node_new_op );
-        tree_hang_loose_node_at_right( tree, node_first, node_new_op );
+        tree_hang_loose_node_at_left( tree, node_first, node_new_op );
+        tree_hang_loose_node_at_right( tree, node_second, node_new_op );
         node_first = node_new_op;
     }
 

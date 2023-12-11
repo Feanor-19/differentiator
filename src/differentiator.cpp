@@ -388,18 +388,17 @@ void diff_simplify( Expression *expr_ptr )
     } while (changes);
 }
 
-int is_subtree_var( const Expression *expr_ptr, const TreeNode *subtree, var_t var )
+int is_subtree_var( const TreeNode *subtree, var_t var )
 {
-    assert(expr_ptr);
     assert(subtree);
 
     if ( diff_get_type(subtree) == VAR && diff_get_var(subtree) == var)
         return 1;
 
-    if (subtree->left && is_subtree_var(expr_ptr, subtree->left, var))
+    if (subtree->left && is_subtree_var(subtree->left, var))
         return 1;
 
-    if (subtree->right && is_subtree_var(expr_ptr, subtree->right, var))
+    if (subtree->right && is_subtree_var(subtree->right, var))
         return 1;
 
     return 0;

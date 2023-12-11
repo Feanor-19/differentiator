@@ -29,7 +29,7 @@ void diff_simplify( Expression *expr_ptr );
 
 //! @brief Returns 1 if subtree, which starts with 'subtree' node,
 //! CONTAINS variable 'var', and 0 otherwise.
-int is_subtree_var( const Expression *expr_ptr, const TreeNode *subtree, var_t var );
+int is_subtree_var( const TreeNode *subtree, var_t var );
 
 void diff_expr_dtor( Expression *expr_ptr );
 

@@ -46,6 +46,16 @@ double op_unr_sqrt(double a)
     return sqrt(a);
 }
 
+double op_unr_exp(double a)
+{
+    return exp(a);
+}
+
+double op_unr_ln(double a)
+{
+    return log(a);
+}
+
 
 
 #define _INSERT_OP_BIN_AND_GET( node_where, op, as_which_child )      \
@@ -162,7 +172,52 @@ void diff_op_pow( const Tree *src_tree, const TreeNode *node_to_diff,
     assert(node_to_diff);
     assert(new_tree);
 
+    if ( !is_subtree_var( _L, diff_by ) && !is_subtree_var( _R, diff_by ) )
+    {
+        diff_insert_const( new_tree, parent_node_ptr, 0, child );
+    }
+    else if ( is_subtree_var( _L, diff_by ) && !is_subtree_var( _R, diff_by ) )
+    {
+        TreeNode *node_mul1 = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
+        _INSERT_DIFFED( _L, node_mul1, RIGHT );
+        TreeNode *node_mul2 = _INSERT_OP_BIN_AND_GET( node_mul1, OP_MUL, LEFT );
+        _INSERT_COPY( _R, node_mul2, LEFT );
+        TreeNode *node_pow = _INSERT_OP_BIN_AND_GET( node_mul2, OP_POW, RIGHT );
+        _INSERT_COPY( _L, node_pow, LEFT );
+        TreeNode *node_sub = _INSERT_OP_BIN_AND_GET( node_pow, OP_SUB, RIGHT );
+        _INSERT_COPY( _R, node_sub, LEFT );
+        diff_insert_const( new_tree, node_sub, 1, RIGHT );
+    }
+    else if ( !is_subtree_var( _L, diff_by ) && is_subtree_var( _R, diff_by ) )
+    {
+        TreeNode *node_mul1 = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
 
+        _INSERT_COPY( node_to_diff, node_mul1, LEFT );
+
+        TreeNode *node_mul2 = _INSERT_OP_BIN_AND_GET( node_mul1, OP_MUL, RIGHT );
+        TreeNode *node_ln = _INSERT_OP_UNR_AND_GET( node_mul2, OP_LN, LEFT );
+        _INSERT_COPY( _L, node_ln, LEFT );
+        _INSERT_DIFFED( _R, node_mul2, RIGHT );
+    }
+    else if ( is_subtree_var( _L, diff_by ) && is_subtree_var( _R, diff_by ) )
+    {
+        TreeNode *node_mul1 = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
+
+        _INSERT_COPY( node_to_diff, node_mul1, LEFT );
+
+        TreeNode *node_add = _INSERT_OP_BIN_AND_GET( node_mul1, OP_ADD, RIGHT );
+
+        TreeNode *node_mul2 = _INSERT_OP_BIN_AND_GET( node_add, OP_MUL, LEFT );
+        TreeNode *node_div = _INSERT_OP_BIN_AND_GET( node_mul2, OP_DIV, LEFT );
+        _INSERT_DIFFED( _L, node_div, LEFT );
+        _INSERT_COPY( _L, node_div, RIGHT );
+        _INSERT_COPY( _R, node_mul2, RIGHT );
+
+        TreeNode *node_mul3 = _INSERT_OP_BIN_AND_GET( node_add, OP_MUL, RIGHT );
+        TreeNode *node_ln = _INSERT_OP_UNR_AND_GET( node_mul3, OP_LN, LEFT );
+        _INSERT_COPY( _L, node_ln, LEFT );
+        _INSERT_DIFFED( _R, node_mul3, RIGHT );
+    }
 }
 
 
@@ -210,4 +265,23 @@ void diff_op_sqrt( const Tree *src_tree, const TreeNode *node_to_diff,
     TreeNode *node_sqrt = _INSERT_OP_UNR_AND_GET(node_mul, OP_SQRT, RIGHT);
 
     _INSERT_COPY(_L, node_sqrt, LEFT);
+}
+
+void diff_op_exp( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    TreeNode *node_mul = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
+    TreeNode *node_exp = _INSERT_OP_UNR_AND_GET( node_mul, OP_EXP, LEFT );
+    _INSERT_COPY( _L, node_exp, LEFT );
+    _INSERT_DIFFED( _L, node_mul, RIGHT );
+}
+
+void diff_op_ln( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    TreeNode *node_div = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_DIV, child );
+    _INSERT_DIFFED( _L, node_div, LEFT );
+    _INSERT_COPY( _L, node_div, RIGHT );
 }

@@ -50,14 +50,12 @@ int main()
 
     Expression diffed_expr = diff_diff(&expr, 0);
 
-    // diff_dump(&diffed_expr);
+    diff_dump(&diffed_expr);
     printf("Diffed expression: ");
     diff_print_expr(stdout, &diffed_expr);
     printf("\n");
 
-    int is_diffed_expr_const = !is_subtree_var( &diffed_expr,
-                                                tree_get_root( &diffed_expr.expr_tree ),
-                                                0);
+    int is_diffed_expr_const = !is_subtree_var( tree_get_root( &diffed_expr.expr_tree ), 0);
     printf( "Is diffed expression a const (concerning var 0): %s.\n",
             ( is_diffed_expr_const ? "yes" : "no" ) );
 
