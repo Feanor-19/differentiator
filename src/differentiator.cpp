@@ -298,7 +298,7 @@ inline int fold_neutrals_mul_zero( Expression *expr_ptr, TreeNode *node_ptr )
     return 0;
 }
 
-inline int fold_neutral_zero_dived_by_smth( Expression *expr_ptr, TreeNode *node_ptr )
+inline int fold_neutrals_zero_dived_by_smth( Expression *expr_ptr, TreeNode *node_ptr )
 {
     TreeNode* node_left = tree_get_left_child(node_ptr);
     TreeNode* node_right = tree_get_right_child(node_ptr);
@@ -350,6 +350,9 @@ int diff_fold_neutrals( Expression *expr_ptr, TreeNode *node_ptr )
 
         if (!curr_change)
             curr_change = fold_neutrals_mul_zero( expr_ptr, node_ptr );
+
+        if (!curr_change)
+            curr_change = fold_neutrals_zero_dived_by_smth( expr_ptr, node_ptr );
 
         changes |= curr_change;
         break;
