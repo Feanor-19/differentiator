@@ -109,8 +109,6 @@ Expression diff_diff( const Expression *expr_ptr, var_t diff_by )
         new_expr.vars_names[ind] = strdup( expr_ptr->vars_names[ind] );
     }
 
-    diff_simplify( &new_expr );
-
     return new_expr;
 }
 
