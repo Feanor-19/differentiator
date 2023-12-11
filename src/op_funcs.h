@@ -16,6 +16,8 @@ double op_unr_minus(double a);
 double op_unr_sqrt(double a);
 double op_unr_exp(double a);
 double op_unr_ln(double a);
+double op_unr_sin(double a);
+double op_unr_cos(double a);
 
 
 
@@ -49,6 +51,12 @@ void diff_op_exp( const Tree *src_tree, const TreeNode *node_to_diff,
                   Tree *new_tree, TreeNode *parent_node_ptr,
                   Child child, var_t diff_by );
 void diff_op_ln( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by );
+void diff_op_sin( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by );
+void diff_op_cos( const Tree *src_tree, const TreeNode *node_to_diff,
                   Tree *new_tree, TreeNode *parent_node_ptr,
                   Child child, var_t diff_by );
 

@@ -112,7 +112,6 @@ Expression diff_diff( const Expression *expr_ptr, var_t diff_by )
     return new_expr;
 }
 
-// TODO - вопрос про оформление свитчей
 int diff_fold_constants( Expression *expr_ptr, TreeNode *node_ptr )
 {
     assert(expr_ptr);
@@ -305,8 +304,8 @@ inline int fold_neutrals_zero_dived_by_smth( Expression *expr_ptr, TreeNode *nod
     {
         // TODO - лучше так или очень разветвленно, но с маленькими условиями??
         if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) )
-            && ( diff_get_type(node_right) != CONST
-                || (diff_get_type(node_right) == CONST && !is_dbl_zero( diff_get_const( node_right )) ) ) )
+            && ( diff_get_type(node_right) != CONST || (diff_get_type(node_right) == CONST
+                                                    && !is_dbl_zero( diff_get_const( node_right )) ) ) )
         {
             tree_delete_left_child( &expr_ptr->expr_tree, node_ptr );
             tree_delete_subtree( &expr_ptr->expr_tree, tree_get_right_child(node_ptr) );

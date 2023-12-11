@@ -33,7 +33,9 @@ const OpUnr op_unr_list[] =
     { "-",          TKN_OP_UNR_DEFAULT,     op_unr_minus,   diff_op_minus},
     { "sqrt",       TKN_OP_UNR_DEFAULT,     op_unr_sqrt,    diff_op_sqrt},
     { "exp",        TKN_OP_UNR_DEFAULT,     op_unr_exp,     diff_op_exp},
-    { "ln",         TKN_OP_UNR_DEFAULT,     op_unr_ln,      diff_op_ln}
+    { "ln",         TKN_OP_UNR_DEFAULT,     op_unr_ln,      diff_op_ln},
+    { "sin",        TKN_OP_UNR_DEFAULT,     op_unr_sin,     diff_op_sin},
+    { "cos",        TKN_OP_UNR_DEFAULT,     op_unr_cos,     diff_op_cos}
 };
 const OpBin op_bin_list[] =
 {
@@ -52,6 +54,8 @@ enum OpsUnr
     OP_SQRT,
     OP_EXP,
     OP_LN,
+    OP_SIN,
+    OP_COS,
 };
 
 enum OpsBin

@@ -27,6 +27,8 @@ inline int get_vars_values_from_user( const Expression *expr_ptr, double *vars_v
         return 0;
     }
 
+    clear_inp(stdin);
+
     return 1;
 }
 
@@ -63,8 +65,8 @@ int main()
     // end of input
 
     // ...some work with expression...
-    // diff_dump( &expr );
-    diff_start_latex_doc( "LaTeX" );
+    diff_dump( &expr );
+    diff_start_latex_doc( );
 
 
     diff_write_latex_section( LATEX_SECTION_GIVEN );
@@ -88,7 +90,7 @@ int main()
     Expression diffed_expr = diff_diff(&expr, 0);
 
 
-    // diff_dump(&diffed_expr);
+    diff_dump(&diffed_expr);
     diff_write_latex_section( LATEX_SECTION_DIFF );
     diff_write_latex_rand_phrase();
     diff_write_latex_expr( &diffed_expr );

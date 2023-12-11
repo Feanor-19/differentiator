@@ -9,12 +9,16 @@ const char * const LATEX_SECTION_DIFF       = "Продифффффференц�
 const char * const LATEX_SECTION_SIMPLIFY   = "Упростим:";
 
 
+#define LATEX_DIR_NAME ".\\LaTeX\\"
+#define LATEX_FILE_NAME "latex.tex"
+
+
 DiffStatus diff_print_expr_as_text( FILE *stream, const Expression *expr_ptr );
 
 //! @brief Creates .tex file with this name
 //! and writes latex header into it. If there is already latex file
 //! started (and not yet ended), returns error and does nothing.
-DiffStatus diff_start_latex_doc( const char *dir_name );
+DiffStatus diff_start_latex_doc(  );
 
 //! @brief Writes given expression into ALREADY CREATED
 //! AND OPENED USING diff_start_latex_doc() .tex file. If no .tex file

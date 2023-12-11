@@ -56,6 +56,15 @@ double op_unr_ln(double a)
     return log(a);
 }
 
+double op_unr_sin(double a)
+{
+    return sin(a);
+}
+
+double op_unr_cos(double a)
+{
+    return cos(a);
+}
 
 
 #define _INSERT_OP_BIN_AND_GET( node_where, op, as_which_child )      \
@@ -284,4 +293,25 @@ void diff_op_ln( const Tree *src_tree, const TreeNode *node_to_diff,
     TreeNode *node_div = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_DIV, child );
     _INSERT_DIFFED( _L, node_div, LEFT );
     _INSERT_COPY( _L, node_div, RIGHT );
+}
+
+void diff_op_sin( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    TreeNode *node_mul = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
+    TreeNode *node_cos = _INSERT_OP_UNR_AND_GET( node_mul, OP_COS, LEFT );
+    _INSERT_COPY( _L, node_cos, LEFT );
+    _INSERT_DIFFED( _L, node_mul, RIGHT );
+}
+
+void diff_op_cos( const Tree *src_tree, const TreeNode *node_to_diff,
+                  Tree *new_tree, TreeNode *parent_node_ptr,
+                  Child child, var_t diff_by )
+{
+    TreeNode *node_mul = _INSERT_OP_BIN_AND_GET( parent_node_ptr, OP_MUL, child );
+    TreeNode *node_minus = _INSERT_OP_UNR_AND_GET( node_mul, OP_MINUS, LEFT );
+    TreeNode *node_sin = _INSERT_OP_UNR_AND_GET( node_minus, OP_SIN, LEFT );
+    _INSERT_COPY( _L, node_sin, LEFT );
+    _INSERT_DIFFED( _L, node_mul, RIGHT );
 }

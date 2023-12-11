@@ -18,12 +18,13 @@ LIB_NAMES 			= tree onegin
 LIB_SUBST 			= -L$(COMMON_LIB_FOLDER)$(lib_name)/bin -l$(lib_name)
 LIB_HEADERS_SUBST 	= -I $(COMMON_LIB_FOLDER)$(lib_name)/headers
 
-LIBS 		= $(foreach lib_name,$(LIB_NAMES),$(LIB_SUBST))
-LIB_HEADERS	= $(foreach lib_name,$(LIB_NAMES),$(LIB_HEADERS_SUBST))
-SOURCES 	= $(wildcard $(SRC)/*.cpp)
-OBJFILES 	= $(patsubst $(SRC)/%,$(OBJ)/%,$(SOURCES:.cpp=.o))
-OUT 		= main.exe
-DUMP_FOLDER = .\dumps
+LIBS 			= $(foreach lib_name,$(LIB_NAMES),$(LIB_SUBST))
+LIB_HEADERS		= $(foreach lib_name,$(LIB_NAMES),$(LIB_HEADERS_SUBST))
+SOURCES 		= $(wildcard $(SRC)/*.cpp)
+OBJFILES 		= $(patsubst $(SRC)/%,$(OBJ)/%,$(SOURCES:.cpp=.o))
+OUT 			= main.exe
+DUMP_FOLDER 	= .\dumps
+LATEX_FOLDER 	= .\LaTeX
 
 $(OUT) : $(OBJFILES)
 	@$(CC) -o $@ $(CFLAGS) $^ $(LIB_HEADERS) $(LIBS)
@@ -39,3 +40,7 @@ clean:
 clean_dumps:
 	rm -r -f $(DUMP_FOLDER)
 	mkdir $(DUMP_FOLDER)
+
+.PHONY: clean_latex
+clean_latex:
+	rm -r -f $(LATEX_FOLDER)
