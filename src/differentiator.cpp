@@ -1,6 +1,7 @@
 #include "differentiator.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -29,7 +30,7 @@ inline double eval_node( Expression *expr_ptr, const double *var_values, TreeNod
         return op_bin_list[ diff_get_op_bin(node_ptr) ].op_f(a, b);
         break;
     case ERROR:
-        // TODO -
+        return NAN;
         break;
     default:
         assert(0);
@@ -302,7 +303,6 @@ inline int fold_neutrals_zero_dived_by_smth( Expression *expr_ptr, TreeNode *nod
 
     if ( diff_get_op_bin( node_ptr ) == OP_DIV )
     {
-        // TODO - лучше так или очень разветвленно, но с маленькими условиями??
         if ( diff_get_type(node_left) == CONST && is_dbl_zero( diff_get_const( node_left ) )
             && ( diff_get_type(node_right) != CONST || (diff_get_type(node_right) == CONST
                                                     && !is_dbl_zero( diff_get_const( node_right )) ) ) )

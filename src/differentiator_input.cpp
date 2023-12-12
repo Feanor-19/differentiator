@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <string.h>
 
 
 //! @note DO REALLOC_WRP BEFORE USING!
@@ -102,7 +103,9 @@ DiffStatus parse_file_buf( FileStream file, TknsAndVars *ret )
             int is_num_read = sscanf(file.ptr, "%lf%n", &num, &read_chars);
             if (!is_num_read)
             {
-                // TODO - ОШИБКА!
+                fprintf(stderr, "Error during parsing to tokens:\n"
+                                "number expected, found: %s", file.ptr);
+                return DIFF_STATUS_ERROR_TOKEN_PARSING;
             }
 
             REALLOC_ARR_WRP(tokens, Token);

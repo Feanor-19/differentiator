@@ -6,6 +6,8 @@
 #include "differentiator_dump.h"
 #include "utils.h"
 
+#include "..\..\..\mylibheaders\onegin.h"
+
 inline int get_vars_values_from_user( const Expression *expr_ptr, double *vars_values )
 {
     printf( "Do you want to evaluate the expression? [y/n]\n" );
@@ -34,6 +36,8 @@ inline int get_vars_values_from_user( const Expression *expr_ptr, double *vars_v
 
 int main()
 {
+    // ДАННЫЙ main() СЛУЖИТ ДЕМОНСТРАЦИОННЫМ ПРИМЕРОМ ВОЗМОЖНОСТЕЙ ДИФФЕРЕНЦИАТОРА
+
     FileBuf file_buf = read_file_to_buf( "test.txt" );
 
     TknsAndVars parsed_tokens = {};
@@ -100,7 +104,7 @@ int main()
     diff_write_latex_section( LATEX_SECTION_SIMPLIFY );
     diff_write_latex_rand_phrase();
     diff_write_latex_expr(&diffed_expr);
-
+    diff_dump(&diffed_expr);
 
     int is_diffed_expr_const = !is_subtree_var( tree_get_root( &diffed_expr.expr_tree ), 0);
     printf( "Is diffed expression a const (concerning var 0): %s.\n",
@@ -112,6 +116,9 @@ int main()
         double x = diff_evaluate( &diffed_expr, vars_values );
         fprintf(stdout, "Result in diffed expression: <%g>\n", x);
     }
+
+
+    diff_print_expr_as_text( stdout, &diffed_expr );
 
 
     diff_end_latex_doc();

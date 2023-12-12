@@ -9,9 +9,20 @@
 #include <dirent.h>
 
 
-inline int are_parentheses_needed( op_prior_t prior, op_prior_t prev_op_prior )
+inline int are_parentheses_needed( op_prior_t prior,
+                                   op_prior_t prev_op_prior,
+                                   const TreeNode *node_ptr )
 {
-    return prior <= prev_op_prior;
+    TreeNode *parent = tree_get_parent( node_ptr );
+    return prior < prev_op_prior
+        || (parent
+            && diff_get_type( parent ) == OP_BIN
+            && diff_get_op_bin( parent ) == OP_POW
+            && tree_get_left_child( parent ) == node_ptr )
+        || ( parent
+            && diff_get_type( parent ) == OP_BIN
+            && diff_get_op_bin( parent ) == OP_DIV
+            && tree_get_right_child( parent ) == node_ptr );
 }
 
 static DiffStatus print_as_text_expr_tree_node( FILE *stream,
@@ -33,20 +44,24 @@ static DiffStatus print_as_text_expr_tree_node( FILE *stream,
         break;
     case OP_UNR:
         prior = op_unr_list[diff_get_op_unr(node_ptr)].prior;
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
+            fprintf(stream, "(");
         fprintf(stream, "%s(", op_unr_list[diff_get_op_unr(node_ptr)].name);
         print_as_text_expr_tree_node(stream, expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(stream, ")");
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
+            fprintf(stream, ")");
         break;
     case OP_BIN:
         prior = op_bin_list[diff_get_op_bin(node_ptr)].prior;
-        if ( are_parentheses_needed(prior, prev_op_prior) )
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
             fprintf(stream, "(");
 
         print_as_text_expr_tree_node(stream, expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(stream, " %s ", op_bin_list[diff_get_op_bin(node_ptr)].name);
         print_as_text_expr_tree_node(stream, expr_ptr, tree_get_right_child(node_ptr), prior);
 
-        if ( are_parentheses_needed(prior, prev_op_prior) )
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
             fprintf(stream, ")");
         break;
     case ERROR:
@@ -71,7 +86,6 @@ DiffStatus diff_print_expr_as_text( FILE *stream, const Expression *expr_ptr )
 }
 
 
-// TODO - обосновано ли?
 static FILE *TEX_STREAM    = NULL;
 static char *FILE_NAME     = NULL;
 
@@ -95,17 +109,20 @@ static DiffStatus print_as_latex_expr_tree_node( const Expression *expr_ptr,
         break;
     case OP_UNR:
         prior = op_unr_list[diff_get_op_unr(node_ptr)].prior;
-
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
+            fprintf(TEX_STREAM, "(");
         if ( diff_get_op_unr(node_ptr) != OP_MINUS && diff_get_op_unr(node_ptr) != OP_PLUS )
             fprintf( TEX_STREAM, "\\" );
 
         fprintf(TEX_STREAM, "%s{", op_unr_list[diff_get_op_unr(node_ptr)].name);
         print_as_latex_expr_tree_node(expr_ptr, tree_get_left_child(node_ptr), prior);
         fprintf(TEX_STREAM, "}");
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
+            fprintf(TEX_STREAM, ")");
         break;
     case OP_BIN:
         prior = op_bin_list[diff_get_op_bin(node_ptr)].prior;
-        if ( prior < prev_op_prior )
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
             fprintf(TEX_STREAM, "(");
 
         if ( diff_get_op_bin( node_ptr ) == OP_DIV )
@@ -123,7 +140,7 @@ static DiffStatus print_as_latex_expr_tree_node( const Expression *expr_ptr,
             print_as_latex_expr_tree_node(expr_ptr, tree_get_right_child(node_ptr), prior);
         }
 
-        if ( are_parentheses_needed(prior, prev_op_prior) )
+        if ( are_parentheses_needed(prior, prev_op_prior, node_ptr) )
             fprintf(TEX_STREAM, ")");
         break;
     case ERROR:
@@ -227,7 +244,7 @@ DiffStatus diff_end_latex_doc()
     TEX_STREAM = NULL;
 
     // const char cmd[] = "cd " LATEX_DIR_NAME "; pdflatex .\\" LATEX_FILE_NAME "; cd .\\..\\" ;
-    const char cmd[] = "cd .\\LaTeX; pdflatex .\\latex.tex; cd .." ;
+    const char cmd[] = "cd .\\LaTeX && pdflatex latex.tex && cd .." ;
 
     system( cmd );
 
